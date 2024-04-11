@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- init speaker table -->
+    <changeSet id="0" author="Claire">
+        <createTable tableName="speaker">
+            <column name="id" type="uuid"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="lastname" type="text"><constraints nullable="false"/></column>
+            <column name="firstname" type="text"><constraints nullable="false"/></column>
+            <column name="tag_line" type="text"><constraints nullable="false"/></column>
+            <column name="bio" type="text"><constraints nullable="false"/></column>
+            <column name="profile_picture" type="text"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- init session table -->
+    <changeSet id="1" author="Claire">
+        <preConditions>
+            <tableExists tableName="speaker"/>
+        </preConditions>
+
+        <createTable tableName="session">
+            <column name="id" type="number"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="title" type="text"><constraints nullable="false"/></column>
+            <column name="description" type="text"><constraints nullable="false"/></column>
+            <column name="owner_id" type="uuid"><constraints nullable="false" references="speaker(id)" foreignKeyName="fk_sessions_speaker"/></column>
+            <column name="format" type="number"><constraints nullable="false"/></column>
+            <column name="theme" type="number"><constraints nullable="false"/></column>
+            <column name="niveau" type="number"><constraints nullable="false"/></column>
+            <column name="status" type="number"><constraints nullable="false"/></column>
+            <column name="submitted" type="timestamp"><constraints nullable="false"/></column>
+            <column name="owner_notes" type="text"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- init presents association -->
+    <changeSet id="2" author="Claire">
+        <preConditions>
+            <and>
+                <tableExists tableName="speaker"/>
+                <tableExists tableName="session"/>
+            </and>
+        </preConditions>
+
+        <createTable tableName="presents">
+            <column name="speaker_id" type="uuid"><constraints nullable="false" references="speaker(id)" primaryKey="true" foreignKeyName="fk_presents_speaker"/></column>
+            <column name="session_id" type="number"><constraints nullable="false" references="session(id)" primaryKey="true" foreignKeyName="fk_presents_session"/></column>
+            <column name="year" type="number"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

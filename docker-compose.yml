@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  postgresql:
+    image: postgres:15.2
+    container_name: konter-db
+    environment:
+      - POSTGRES_DB=konter
+      - POSTGRES_USER=konter
+      - POSTGRES_PASSWORD=konter
+    command: -p 5433
+    ports:
+      - '5433:5433'

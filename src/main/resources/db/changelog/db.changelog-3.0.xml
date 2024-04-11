@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+    <!-- add description, format and theme infos to manual_session table -->
+    <changeSet id="0" author="Claire">
+        <preConditions>
+            <tableExists tableName="manual_session"/>
+        </preConditions>
+
+        <addColumn tableName="manual_session">
+            <column name="description" type="text"/>
+            <column name="format" type="number"/>
+            <column name="theme" type="number"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add rating to session table -->
+    <changeSet id="1" author="Claire">
+        <addColumn tableName="session">
+            <column name="rating" type="number"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- add email field to speaker table -->
+    <changeSet id="2" author="Claire">
+        <addColumn tableName="speaker">
+            <column name="email" type="text"/>
+        </addColumn>
+    </changeSet>
+    
+    <!-- init sequence for event id -->
+    <changeSet id="3" author="Claire">
+        <addAutoIncrement tableName="event" columnName="id" incrementBy="1"/>
+    </changeSet>
+</databaseChangeLog>

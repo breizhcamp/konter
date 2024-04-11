@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <!-- init event table -->
+    <changeSet id="0" author="Claire">
+        <createTable tableName="event">
+            <column name="id" type="number"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="name" type="text"/>
+            <column name="year" type="number"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <!-- init hall table -->
+    <changeSet id="1" author="Claire">
+        <createTable tableName="hall">
+            <column name="id" type="number"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="name" type="text"/>
+        </createTable>
+    </changeSet>
+
+    <!-- append session table -->
+    <changeSet id="2" author="Claire">
+        <preConditions>
+            <and>
+                <tableExists tableName="event"/>
+                <tableExists tableName="session"/>
+                <tableExists tableName="hall"/>
+            </and>
+        </preConditions>
+
+        <addColumn tableName="session">
+            <column name="event_id" type="number"><constraints nullable="true" references="event(id)" foreignKeyName="fk_session_event"/></column>
+            <column name="hall_id" type="number"><constraints nullable="true" references="hall(id)" foreignKeyName="fk_session_hall"/></column>
+            <column name="beginning" type="timestamp"/>
+            <column name="end" type="timestamp"/>
+            <column name="video_url" type="text"/>
+        </addColumn>
+    </changeSet>
+
+    <!-- drop column year in table presents, event data is now stored in session -->
+    <changeSet id="3" author="Claire">
+        <preConditions>
+            <tableExists tableName="event"/>
+        </preConditions>
+
+        <dropColumn tableName="presents" columnName="year"/>
+    </changeSet>
+
+    <!-- init manual_speaker table -->
+    <changeSet id="4" author="Claire">
+        <createTable tableName="manual_speaker">
+            <column name="id" type="uuid"><constraints nullable="false" primaryKey="true"/></column>
+            <column name="name" type="text"/>
+        </createTable>
+    </changeSet>
+
+    <!-- init manual_session table -->
+    <changeSet id="5" author="Claire">
+        <preConditions>
+            <and>
+                <tableExists tableName="hall"/>
+                <tableExists tableName="speaker"/>
+                <tableExists tableName="manual_speaker"/>
+                <tableExists tableName="event"/>
+            </and>
+        </preConditions>
+
+        <createTable tableName="manual_session">
+            <column name="id" type="number"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="event_id" type="number"><constraints references="event(id)" foreignKeyName="fk_manual_session_event"/></column>
+            <column name="beginning" type="timestamp"/>
+            <column name="end" type="timestamp"/>
+            <column name="speaker_type" type="number"/>
+            <column name="imported_speaker_id" type="uuid"><constraints references="speaker(id)" foreignKeyName="fk_manual_session_speaker"/></column>
+            <column name="manual_speaker_id" type="uuid"><constraints references="manual_speaker(id)" foreignKeyName="fk_manual_session_manual_speaker"/></column>
+            <column name="hall_id" type="number"><constraints references="hall(id)" foreignKeyName="fk_manual_session_hall"/></column>
+            <column name="video_url" type="text"/>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>

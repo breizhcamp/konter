@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/konter
+    username: konter
+    password: konter
+  jpa:
+    show-sql: false
+server:
+  port: 4008
+
+konter:
+  kalon:
+    enabled: true
+    url: http://localhost:4007
+    secured: false
