@@ -5,6 +5,7 @@ import com.itextpdf.text.pdf.*
 import mu.KotlinLogging
 import org.apache.commons.lang3.StringUtils.substring
 import org.breizhcamp.konter.domain.entities.enums.SessionThemeEnum
+import org.breizhcamp.konter.domain.entities.enums.getLabel
 import org.breizhcamp.konter.domain.use_cases.ports.SessionPort
 import org.springframework.stereotype.Service
 import java.io.OutputStream
@@ -48,12 +49,12 @@ class SessionGenerateCards (
             innerTable.widthPercentage = 100f
 
             // One cell contains the format
-            val formatPh = Phrase(Chunk(it.format.sessionizeFormat.replace(", Mercredi", ""), font))
+            val formatPh = Phrase(Chunk(it.format.getLabel(), font))
             val format = PdfPCell(formatPh)
             innerTable.addCell(format)
 
             // One cell contains the theme and has a corresponding background color
-            val track = PdfPCell(Phrase(substring(SessionThemeEnum.getLabel(it.theme), 0, 20), font))
+            val track = PdfPCell(Phrase(substring(it.theme.getLabel(), 0, 20), font))
             track.horizontalAlignment = Element.ALIGN_RIGHT
             track.backgroundColor = bgTracksColor.computeIfAbsent(it.theme) { getColor(bgTracksColor.size + 1) }
             innerTable.addCell(track)

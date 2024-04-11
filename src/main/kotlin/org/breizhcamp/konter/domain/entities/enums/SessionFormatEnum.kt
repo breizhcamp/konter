@@ -10,6 +10,13 @@ enum class SessionFormatEnum(val sessionizeFormat: Regex) {
     companion object {
         fun getFromString(string: String): SessionFormatEnum =
             entries.first { it.sessionizeFormat.matches(string) }
+
+        fun getLabel(formatEnum: SessionFormatEnum) = formatEnum.sessionizeFormat.pattern
+            .replace(", Mercredi", "")
+            .replace("\\", "")
+            .replace(".", "é")
     }
 }
+
+fun SessionFormatEnum.getLabel() = SessionFormatEnum.getLabel(formatEnum = this)
 

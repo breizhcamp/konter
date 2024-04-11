@@ -19,7 +19,14 @@ enum class SessionThemeEnum(val sessionizeTheme: Regex) {
         fun getFromString(string: String): SessionThemeEnum =
             entries.first { it.sessionizeTheme.matches(string) }
 
-        fun getLabel(themeEnum: SessionThemeEnum): String =
-            themeEnum.sessionizeTheme.replace(".", "é")
+        fun getLabel(themeEnum: SessionThemeEnum): String {
+            return when (themeEnum) {
+                OTHER -> "Autre..."
+                GREEN -> "Écoconception"
+                else -> themeEnum.sessionizeTheme.pattern.replace(".", "é")
+            }
+        }
     }
 }
+
+fun SessionThemeEnum.getLabel() = SessionThemeEnum.getLabel(themeEnum = this)
