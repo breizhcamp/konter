@@ -14,4 +14,17 @@ data class SessionFilter(
     val niveau: SessionNiveauEnum?,
     val status: SessionStatusEnum?,
     val rated: Boolean?
-)
+) {
+    companion object {
+        fun empty(): SessionFilter = SessionFilter(
+            id = null,
+            title = null,
+            speakerName = null,
+            format = null,
+            theme = null,
+            niveau = null,
+            status = null,
+            rated = null
+        )
+    }
+}

@@ -5,8 +5,4 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface SessionRepo: JpaRepository<SessionDB, Int>, SessionRepoCustom {
-
-    fun findAllByEventYearOrderByRatingDesc(year: Int): List<SessionDB>
-
-}
+interface SessionRepo: JpaRepository<SessionDB, Int>, SessionRepoCustom
