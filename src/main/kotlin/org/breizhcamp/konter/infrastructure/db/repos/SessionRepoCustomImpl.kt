@@ -1,11 +1,13 @@
 package org.breizhcamp.konter.infrastructure.db.repos
 
-import com.querydsl.jpa.JPAExpressions
+import mu.KotlinLogging
 import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.infrastructure.db.model.QSessionDB
 import org.breizhcamp.konter.infrastructure.db.model.QSpeakerDB
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
+
+private val logger = KotlinLogging.logger {  }
 
 class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), SessionRepoCustom {
     override fun filter(year: Int, filter: SessionFilter): List<SessionDB> {
@@ -17,6 +19,11 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
 
         filter.id?.let {
             query.where(session.id.eq(it))
+            val bypassedFilterValue = query.fetch()
+            if (bypassedFilterValue.size == 1) {
+                logger.info { "Session found with id, bypassing the rest of the filter" }
+                return bypassedFilterValue
+            }
         }
 
         filter.title?.let {
@@ -24,12 +31,20 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
         }
 
         filter.speakerName?.let {
-            query.where(session.speakers.contains(
-                JPAExpressions.selectFrom(speaker)
-                    .where(speaker.firstname.concat(" ")
-                        .concat(speaker.lastname)
-                        .containsIgnoreCase(it))
-            ))
+            val speakers = from(speaker)
+                .where(speaker.firstname.concat(" ")
+                    .concat(speaker.lastname)
+                    .containsIgnoreCase(it))
+                .fetch()
+
+            if (speakers.size > 0) {
+                var subContains = session.speakers.contains(speakers.removeFirst())
+                speakers.forEach {
+                    speaker -> subContains = subContains
+                        .or(session.speakers.contains(speaker))
+                }
+                query.where(subContains)
+            }
         }
 
         filter.format?.let {
@@ -55,6 +70,8 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
                 query.where(session.rating.isNull)
             }
         }
+
+        query.orderBy(session.rating.desc().nullsLast())
 
         return query.fetch()
     }

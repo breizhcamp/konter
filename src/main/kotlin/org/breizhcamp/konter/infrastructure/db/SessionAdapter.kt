@@ -21,7 +21,7 @@ class SessionAdapter (
     }
 
     override fun getAllByEventYear(year: Int): List<Session> =
-        sessionRepo.findAllByEventYear(year).map { it.toSession() }
+        sessionRepo.findAllByEventYearOrderByRatingDesc(year).map { it.toSession() }
 
     override fun saveEvaluation(evaluation: Evaluation) {
         val session = evaluation.session.copy(rating = evaluation.rating)
