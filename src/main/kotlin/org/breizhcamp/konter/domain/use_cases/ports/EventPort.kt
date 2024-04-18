@@ -1,6 +1,6 @@
 package org.breizhcamp.konter.domain.use_cases.ports
 
-import org.breizhcamp.konter.application.dto.EventCreationReq
+import org.breizhcamp.konter.application.requests.EventCreationReq
 import org.breizhcamp.konter.domain.entities.Event
 
 interface EventPort {

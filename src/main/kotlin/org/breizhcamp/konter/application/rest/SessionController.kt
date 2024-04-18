@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
 import org.breizhcamp.konter.application.dto.SessionDTO
 import org.breizhcamp.konter.domain.entities.Session
+import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.domain.use_cases.SessionGenerateCards
 import org.breizhcamp.konter.domain.use_cases.SessionImport
 import org.breizhcamp.konter.domain.use_cases.SessionList
@@ -27,6 +28,13 @@ class SessionController (
         logger.info { "Listing Sessions from year $year" }
 
         return sessionList.list(year).map { it.toDto() }
+    }
+
+    @PostMapping("/{year}/filter")
+    fun filterSessions(@PathVariable year: Int, @RequestBody sessionFilter: SessionFilter): List<SessionDTO> {
+        logger.info { "Filtering Sessions from year $year" }
+
+        return sessionList.filter(year, sessionFilter).map { it.toDto() }
     }
 
     @PostMapping("/{year}/import")

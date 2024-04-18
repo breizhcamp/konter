@@ -1,6 +1,6 @@
 package org.breizhcamp.konter.infrastructure.db
 
-import org.breizhcamp.konter.application.dto.EventCreationReq
+import org.breizhcamp.konter.application.requests.EventCreationReq
 import org.breizhcamp.konter.domain.entities.Event
 import org.breizhcamp.konter.domain.use_cases.ports.EventPort
 import org.breizhcamp.konter.infrastructure.db.mappers.toDB
@@ -29,4 +29,5 @@ class EventAdapter (
 
     override fun create(request: EventCreationReq): Int =
         eventRepo.createEvent(request.year)
+
 }

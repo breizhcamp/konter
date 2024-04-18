@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="0" author="Claire">
+        <preConditions>
+            <and>
+                <tableExists tableName="event"/>
+                <tableExists tableName="hall"/>
+            </and>
+        </preConditions>
+
+        <createTable tableName="available">
+            <column name="event_id" type="number"><constraints primaryKey="true" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_EVENT" nullable="false"/></column>
+            <column name="hall_id" type="number"><constraints primaryKey="true" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_HALL" nullable="false"/></column>
+        </createTable>
+
+        <addAutoIncrement tableName="hall" columnName="id" incrementBy="1"/>
+    </changeSet>
+</databaseChangeLog>

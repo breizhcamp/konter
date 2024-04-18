@@ -2,6 +2,7 @@ package org.breizhcamp.konter.infrastructure.db
 
 import org.breizhcamp.konter.domain.entities.Evaluation
 import org.breizhcamp.konter.domain.entities.Session
+import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.domain.use_cases.ports.SessionPort
 import org.breizhcamp.konter.infrastructure.db.mappers.toDB
 import org.breizhcamp.konter.infrastructure.db.mappers.toSession
@@ -26,4 +27,7 @@ class SessionAdapter (
         val session = evaluation.session.copy(rating = evaluation.rating)
         sessionRepo.save(session.toDB())
     }
+
+    override fun filterByEventYear(year: Int, filter: SessionFilter): List<Session> =
+        sessionRepo.filter(year, filter).map { it.toSession() }
 }

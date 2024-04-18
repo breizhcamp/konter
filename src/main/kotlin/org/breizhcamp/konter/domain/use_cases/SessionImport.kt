@@ -2,7 +2,7 @@ package org.breizhcamp.konter.domain.use_cases
 
 import mu.KotlinLogging
 import org.apache.commons.csv.CSVFormat
-import org.breizhcamp.konter.application.dto.EventCreationReq
+import org.breizhcamp.konter.application.requests.EventCreationReq
 import org.breizhcamp.konter.domain.entities.Evaluation
 import org.breizhcamp.konter.domain.entities.Event
 import org.breizhcamp.konter.domain.entities.Session

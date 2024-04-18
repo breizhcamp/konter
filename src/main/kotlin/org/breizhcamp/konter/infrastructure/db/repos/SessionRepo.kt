@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface SessionRepo: JpaRepository<SessionDB, Int> {
+interface SessionRepo: JpaRepository<SessionDB, Int>, SessionRepoCustom {
 
     fun findAllByEventYear(year: Int): List<SessionDB>
 
