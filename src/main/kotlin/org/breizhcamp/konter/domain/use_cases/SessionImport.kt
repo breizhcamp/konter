@@ -67,17 +67,17 @@ class SessionImport (
                         .withLocale(Locale.FRENCH)),
                 ownerNotes = it[11].trim(),
                 event = event,
-                hall = null,
                 beginning = null,
                 end = null,
                 videoURL = null,
                 rating = null,
+                slot = null,
             )
         }
 
         logger.info { "Saving [${sessions.size}] Sessions" }
 
-        sessions.forEach(sessionPort::save)
+        sessions.forEach(sessionPort::import)
     }
 
     fun importEvaluationCsv(file: InputStream) {

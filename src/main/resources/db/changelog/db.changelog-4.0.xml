@@ -19,4 +19,73 @@
 
         <addAutoIncrement tableName="hall" columnName="id" incrementBy="1"/>
     </changeSet>
+
+    <changeSet id="1" author="Claire">
+        <createTable tableName="slot">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="event_id" type="number"><constraints nullable="false" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_SLOT_EVENT"/></column>
+            <column name="hall_id" type="number"><constraints nullable="false" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_SLOT_HALL"/></column>
+            <column name="session_id" type="number"><constraints referencedTableName="session" referencedColumnNames="id" foreignKeyName="FK_SLOT_SESSION"/></column>
+            <column name="day" type="integer"/>
+            <column name="start" type="time"/>
+            <column name="duration" type="interval"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="Claire">
+        <addColumn tableName="hall">
+            <column name="track_id" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="Claire">
+        <addColumn tableName="session">
+            <column name="barcode" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="4" author="Claire">
+        <modifyDataType tableName="session" columnName="barcode" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="5" author="Claire">
+        <addColumn tableName="slot">
+            <column name="barcode" type="text"><constraints nullable="true" /></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="6" author="Claire">
+        <addColumn tableName="slot">
+            <column name="span" type="number" defaultValue="1"><constraints nullable="false"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="7" author="Claire">
+        <addColumn tableName="available">
+            <column name="order" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="8" author="Claire">
+        <createTable tableName="held">
+            <column name="slot_id" type="uuid"><constraints nullable="false" primaryKey="true" referencedTableName="slot" referencedColumnNames="id" foreignKeyName="FK_HELD_SLOT"/></column>
+            <column name="hall_id" type="numeric"><constraints nullable="false" primaryKey="true" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_HELD_HALL"/></column>
+            <column name="event_id" type="numeric"><constraints nullable="false" primaryKey="true" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_HELD_EVENT"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="9" author="Claire">
+        <sql>
+            INSERT INTO held (slot_id, hall_id, event_id)
+            SELECT id, hall_id, event_id FROM slot
+        </sql>
+    </changeSet>
+
+    <changeSet id="10" author="Claire">
+        <dropColumn tableName="slot">
+            <column name="hall_id"/>
+            <column name="event_id"/>
+            <column name="span"/>
+        </dropColumn>
+    </changeSet>
 </databaseChangeLog>

@@ -39,13 +39,16 @@ data class SessionDB(
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = true)
     val event: EventDB,
-    @ManyToOne
-    @JoinColumn(name = "hall_id", nullable = true)
-    val hall: HallDB?,
     val beginning: LocalDateTime?,
     @Column(name = "\"end\"")
     val end: LocalDateTime?,
     @Column(name = "video_url")
     val videoURL: String?,
     val rating: BigDecimal?,
+    val barcode: String?,
+    @OneToOne(
+        targetEntity = SlotDB::class,
+        mappedBy = "session"
+    )
+    val slot: SlotDB?
 )

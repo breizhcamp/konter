@@ -5,6 +5,6 @@ import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 
 interface SessionRepoCustom {
 
-    fun filter(year: Int,filter: SessionFilter): List<SessionDB>
+    fun filter(eventId: Int, filter: SessionFilter, sortByFormat: Boolean): List<SessionDB>
 
 }

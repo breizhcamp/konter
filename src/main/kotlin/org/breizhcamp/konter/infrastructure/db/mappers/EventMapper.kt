@@ -12,5 +12,6 @@ fun EventDB.toEvent() = Event(
 fun Event.toDB() = EventDB(
     id = id,
     year = year,
-    name = name
+    name = name,
+    halls = emptySet(),
 )

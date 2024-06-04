@@ -3,7 +3,7 @@ package org.breizhcamp.konter.infrastructure.db.mappers
 import org.breizhcamp.konter.domain.entities.Session
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 
-fun SessionDB.toSession() = Session(
+fun SessionDB.toSession(): Session = Session(
     id = id,
     title = title,
     description = description,
@@ -15,15 +15,35 @@ fun SessionDB.toSession() = Session(
     status = status,
     submitted = submitted,
     ownerNotes = ownerNotes,
-    event = event.toEvent(),
-    hall = hall?.toHall(),
     beginning = beginning,
     end = end,
     videoURL = videoURL,
-    rating = rating
+    rating = rating,
+    event = event.toEvent(),
+    slot = slot?.toLimitedSlot()
 )
 
-fun Session.toDB() = SessionDB(
+fun SessionDB.toLimitedSession(): Session = Session(
+    id = id,
+    title = title,
+    description = description,
+    owner = owner.toSpeaker(),
+    speakers = speakers.map { it.toSpeaker() },
+    format = format,
+    theme = theme,
+    niveau = niveau,
+    status = status,
+    submitted = submitted,
+    ownerNotes = ownerNotes,
+    beginning = beginning,
+    end = end,
+    videoURL = videoURL,
+    rating = rating,
+    event = event.toEvent(),
+    slot = null
+)
+
+fun Session.toDB(): SessionDB = SessionDB(
     id = id,
     title = title,
     description = description,
@@ -36,9 +56,10 @@ fun Session.toDB() = SessionDB(
     submitted = submitted,
     ownerNotes = ownerNotes,
     event = event.toDB(),
-    hall = hall?.toDB(),
     beginning = beginning,
     end = end,
     videoURL = videoURL,
-    rating = rating
+    rating = rating,
+    barcode = null,
+    slot = slot?.toDB()
 )
