@@ -13,4 +13,6 @@ class HallCRUD (
     fun create(req: HallCreationReq): Hall = hallPort.create(req)
     fun update(id: Int, req: HallPatchReq): Hall = hallPort.update(id, req)
     fun delete(id: Int) = hallPort.delete(id)
+    fun listAll(): List<Hall> = hallPort.list(null)
+    fun listByEvent(eventId: Int): List<Hall> = hallPort.list(eventId)
 }

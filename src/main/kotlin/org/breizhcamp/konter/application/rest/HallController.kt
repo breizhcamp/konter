@@ -7,7 +7,6 @@ import org.breizhcamp.konter.application.requests.HallPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.use_cases.HallAssociateEvent
 import org.breizhcamp.konter.domain.use_cases.HallCRUD
-import org.breizhcamp.konter.domain.use_cases.HallList
 import org.breizhcamp.konter.domain.use_cases.HallSetOrder
 import org.springframework.web.bind.annotation.*
 
@@ -16,7 +15,6 @@ private val logger = KotlinLogging.logger {  }
 @RestController
 @RequestMapping("/api/halls")
 class HallController (
-    private val hallList: HallList,
     private val hallCRUD: HallCRUD,
     private val hallAssociateEvent: HallAssociateEvent,
     private val hallSetOrder: HallSetOrder
@@ -26,7 +24,7 @@ class HallController (
     fun listAll(): List<HallDTO> {
         logger.info { "Listing all Halls" }
 
-        return hallList.listAll().map { it.toDto() }
+        return hallCRUD.listAll().map { it.toDto() }
     }
 
     @PostMapping
@@ -40,7 +38,7 @@ class HallController (
     fun listByEvent(@PathVariable eventId: Int): List<HallDTO> {
         logger.info { "Listing Halls available for Event:$eventId" }
 
-        return hallList.listByEvent(eventId).map { it.toDto() }
+        return hallCRUD.listByEvent(eventId).map { it.toDto() }
     }
 
     @PatchMapping("/{id}")
