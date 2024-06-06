@@ -8,6 +8,7 @@ import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.use_cases.HallAssociateEvent
 import org.breizhcamp.konter.domain.use_cases.HallCRUD
 import org.breizhcamp.konter.domain.use_cases.HallList
+import org.breizhcamp.konter.domain.use_cases.HallSetOrder
 import org.springframework.web.bind.annotation.*
 
 private val logger = KotlinLogging.logger {  }
@@ -18,6 +19,7 @@ class HallController (
     private val hallList: HallList,
     private val hallCRUD: HallCRUD,
     private val hallAssociateEvent: HallAssociateEvent,
+    private val hallSetOrder: HallSetOrder
 ) {
 
     @GetMapping
@@ -70,10 +72,10 @@ class HallController (
     }
 
     @PatchMapping("/{id}/event/{eventId}/{order}")
-    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int?): HallDTO {
+    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int?) {
         logger.info { "Updating order of Hall:$id for Event:$eventId to $order" }
 
-        TODO("Implement order update call stack")
+        hallSetOrder.setOrder(id, eventId, order)
     }
 
 }
