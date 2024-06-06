@@ -64,7 +64,7 @@ fun ManualSessionDB.toManualSession() = ManualSession(
     id = id,
     title = title,
     description = description,
-    event = eventDB.toEvent(),
+    event = event.toEvent(),
     format = format,
     theme = theme
 )
@@ -73,7 +73,7 @@ fun ManualSession.toDB() = ManualSessionDB(
     id = id,
     title = title,
     description = description,
-    eventDB = event.toDB(),
+    event = event.toDB(),
     format = format,
     theme = theme
 )

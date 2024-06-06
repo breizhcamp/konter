@@ -4,6 +4,8 @@ import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
 import org.breizhcamp.konter.application.dto.ManualSessionDTO
 import org.breizhcamp.konter.application.dto.SessionDTO
+import org.breizhcamp.konter.application.requests.SessionCreationReq
+import org.breizhcamp.konter.application.requests.SessionPatchReq
 import org.breizhcamp.konter.domain.entities.ManualSession
 import org.breizhcamp.konter.domain.entities.Session
 import org.breizhcamp.konter.domain.entities.SessionFilter
@@ -24,6 +26,7 @@ class SessionController (
     private val eventGet: EventGet,
     private val sessionList: SessionList,
     private val slotSetSession: SlotSetSession,
+    private val manualSessionCRUD: ManualSessionCRUD
 ) {
 
     @GetMapping("/{eventId}")
@@ -81,6 +84,41 @@ class SessionController (
         logger.info { "Setting Session:$id to Slot with barcode $barcode" }
 
         return slotSetSession.setByBarcode(id, barcode).toDto()
+    }
+
+    @PostMapping("/manual/{eventId}")
+    fun createManualSession(@PathVariable eventId: Int, @RequestBody request: SessionCreationReq): ManualSessionDTO {
+        logger.info("Creating ManualSession for Event:$eventId with title:${request.title}")
+
+        return manualSessionCRUD.create(request, eventId).toDto()
+    }
+
+    @GetMapping("/manual/{id}")
+    fun getManualSession(@PathVariable id: Int): ManualSessionDTO {
+        logger.info { "Retrieving ManualSession:$id" }
+
+        return manualSessionCRUD.get(id).toDto()
+    }
+
+    @GetMapping("/manual/list/{eventId}")
+    fun listManualSessions(@PathVariable eventId: Int): List<ManualSessionDTO> {
+        logger.info { "Retrieving all ManualSession in Event:$eventId" }
+
+        return manualSessionCRUD.list(eventId).map { it.toDto() }
+    }
+
+    @PatchMapping("/manual/{id}")
+    fun patchManualSession(@PathVariable id: Int, @RequestBody request: SessionPatchReq): ManualSessionDTO {
+        logger.info { "Updating ManualSession:$id" }
+
+        return manualSessionCRUD.update(id, request).toDto()
+    }
+
+    @DeleteMapping("/manual/{id}")
+    fun deleteManualSession(@PathVariable id: Int) {
+        logger.info { "Deleting ManualSession:$id" }
+
+        manualSessionCRUD.delete(id)
     }
 
 }

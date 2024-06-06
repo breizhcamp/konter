@@ -13,7 +13,7 @@ data class ManualSessionDB(
     val description: String,
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = false)
-    val eventDB: EventDB,
+    val event: EventDB,
     val format: SessionFormatEnum,
     val theme: SessionThemeEnum,
 )
