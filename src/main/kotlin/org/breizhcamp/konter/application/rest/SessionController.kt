@@ -2,7 +2,9 @@ package org.breizhcamp.konter.application.rest
 
 import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
+import org.breizhcamp.konter.application.dto.ManualSessionDTO
 import org.breizhcamp.konter.application.dto.SessionDTO
+import org.breizhcamp.konter.domain.entities.ManualSession
 import org.breizhcamp.konter.domain.entities.Session
 import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.domain.use_cases.*
@@ -95,9 +97,15 @@ fun Session.toDto(): SessionDTO = SessionDTO(
     status = status,
     submitted = submitted,
     ownerNotes = ownerNotes,
-    beginning = beginning,
-    end = end,
     videoURL = videoURL,
     rating = rating,
     slot = slot?.toDto()
+)
+
+fun ManualSession.toDto(): ManualSessionDTO = ManualSessionDTO(
+    id = id,
+    title = title,
+    description = description,
+    format = format,
+    theme = theme
 )

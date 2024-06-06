@@ -26,8 +26,6 @@ class SessionAdapter (
             val saved = sessionRepo.findById(session.id).get()
             toSave = toSave.copy(
                 slot = saved.slot,
-                beginning = saved.beginning,
-                end = saved.end,
                 videoURL = saved.videoURL,
                 barcode = saved.barcode,
             )
@@ -55,7 +53,10 @@ class SessionAdapter (
 
     @Transactional
     override fun setSlotById(id: Int, slotId: UUID): Session {
-        sessionRepo.setSlot(id, slotId)
+        if (sessionRepo.hasSlotById(id)) {
+            sessionRepo.removeSlotById(id)
+        }
+        sessionRepo.setSlotById(id, slotId)
         return this.getById(id)
     }
 

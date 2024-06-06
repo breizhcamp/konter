@@ -9,6 +9,7 @@ interface SlotPort {
 
     @Throws
     fun create(hallId: Int, eventId: Int, req: SlotCreationReq): Slot
+    fun getById(id: UUID): Slot
     fun getProgram(eventId: Int): Map<Int, Map<Hall, List<Slot>>>
     fun remove(id: UUID)
     fun associateHall(id: UUID, eventId: Int, hallId: Int): Slot

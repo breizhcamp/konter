@@ -88,4 +88,80 @@
             <column name="span"/>
         </dropColumn>
     </changeSet>
+
+    <changeSet id="11" author="Claire">
+        <addColumn tableName="slot">
+            <column name="manual_session_id" type="numeric" defaultOnNull="true"><constraints nullable="true" referencedTableName="manual_session" referencedColumnNames="id" foreignKeyName="FK_SLOT_MANUAL_SESSION"/></column>
+            <column name="title" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="12" author="Claire">
+        <preConditions>
+            <and>
+                <columnExists tableName="session" columnName="hall_id"/>
+                <columnExists tableName="session" columnName="end"/>
+                <columnExists tableName="session" columnName="beginning"/>
+            </and>
+        </preConditions>
+
+        <dropColumn tableName="session">
+            <column name="hall_id"/>
+            <column name="end"/>
+            <column name="beginning"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="13" author="Claire">
+        <preConditions onFail="CONTINUE">
+            <and>
+                <columnExists tableName="manual_session" columnName="hall_id"/>
+                <columnExists tableName="manual_session" columnName="end"/>
+                <columnExists tableName="manual_session" columnName="beginning"/>
+                <columnExists tableName="manual_session" columnName="speaker_type"/>
+                <columnExists tableName="manual_session" columnName="video_url"/>
+                <columnExists tableName="manual_session" columnName="imported_speaker_id"/>
+                <columnExists tableName="manual_session" columnName="manual_speaker_id"/>
+            </and>
+        </preConditions>
+
+        <dropColumn tableName="manual_session">
+            <column name="hall_id"/>
+            <column name="end"/>
+            <column name="beginning"/>
+            <column name="speaker_type"/>
+            <column name="video_url"/>
+            <column name="imported_speaker_id"/>
+            <column name="manual_speaker_id"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="14" author="Claire">
+        <preConditions onFail="CONTINUE">
+            <not>
+                <or>
+                    <columnExists tableName="manual_session" columnName="title"/>
+                    <tableExists tableName="manual_presents"/>
+                </or>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="manual_session">
+            <column name="title" type="text"><constraints nullable="false"/></column>
+        </addColumn>
+
+        <createTable tableName="manual_presents">
+            <column name="session_id" type="numeric">
+                <constraints nullable="false" primaryKey="true" referencedTableName="manual_session" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_MANUAL_SESSION"/>
+            </column>
+            <column name="speaker_id" type="uuid">
+                <constraints nullable="true" primaryKey="true" referencedTableName="speaker" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_SPEAKER"/>
+            </column>
+            <column name="manual_speaker_id" type="uuid">
+                <constraints nullable="true" primaryKey="true" referencedTableName="manual_speaker" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_MANUAL_SPEAKER"/>
+            </column>
+        </createTable>
+
+        <addAutoIncrement tableName="manual_session" columnName="id" incrementBy="1"/>
+    </changeSet>
 </databaseChangeLog>

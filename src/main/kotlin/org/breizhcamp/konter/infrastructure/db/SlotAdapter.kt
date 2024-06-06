@@ -8,10 +8,7 @@ import org.breizhcamp.konter.domain.entities.Slot
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
 import org.breizhcamp.konter.domain.entities.exceptions.TimeConflictException
 import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
-import org.breizhcamp.konter.infrastructure.db.mappers.toEvent
-import org.breizhcamp.konter.infrastructure.db.mappers.toHall
-import org.breizhcamp.konter.infrastructure.db.mappers.toLimitedSession
-import org.breizhcamp.konter.infrastructure.db.mappers.toSlot
+import org.breizhcamp.konter.infrastructure.db.mappers.*
 import org.breizhcamp.konter.infrastructure.db.model.HallDB
 import org.breizhcamp.konter.infrastructure.db.model.SlotDB
 import org.breizhcamp.konter.infrastructure.db.repos.EventRepo
@@ -74,6 +71,8 @@ class SlotAdapter (
         return hallRepo.getSlotByBarcode(barcode).toSlot()
     }
 
+    override fun getById(id: UUID): Slot = hallRepo.getSlotById(id).toSlot()
+
     override fun getProgram (eventId: Int): Map<Int, Map<Hall, List<Slot>>> {
         val allSlots = eventRepo.getAllSlotsByEventId(eventId)
         val availableHalls = hallRepo.getAllByAvailableEventId(eventId)
@@ -83,6 +82,7 @@ class SlotAdapter (
 
         for (day in days) {
             val daySlots = allSlots
+                .toSet()
                 .filter { it.day == day }
                 .sortedBy { it.start }
                 .toMutableList()
@@ -151,6 +151,8 @@ class SlotAdapter (
             id = id,
             day = day,
             session = session?.toLimitedSession(),
+            title = title,
+            manualSession = manualSession?.toManualSession(),
             event = event.toEvent(),
             halls = newHalls.map { it.toHall() },
             start = start,

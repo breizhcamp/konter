@@ -67,8 +67,6 @@ class SessionImport (
                         .withLocale(Locale.FRENCH)),
                 ownerNotes = it[11].trim(),
                 event = event,
-                beginning = null,
-                end = null,
                 videoURL = null,
                 rating = null,
                 slot = null,

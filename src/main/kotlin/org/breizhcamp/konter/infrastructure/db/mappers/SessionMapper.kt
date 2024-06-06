@@ -1,6 +1,8 @@
 package org.breizhcamp.konter.infrastructure.db.mappers
 
+import org.breizhcamp.konter.domain.entities.ManualSession
 import org.breizhcamp.konter.domain.entities.Session
+import org.breizhcamp.konter.infrastructure.db.model.ManualSessionDB
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 
 fun SessionDB.toSession(): Session = Session(
@@ -15,8 +17,6 @@ fun SessionDB.toSession(): Session = Session(
     status = status,
     submitted = submitted,
     ownerNotes = ownerNotes,
-    beginning = beginning,
-    end = end,
     videoURL = videoURL,
     rating = rating,
     event = event.toEvent(),
@@ -35,8 +35,6 @@ fun SessionDB.toLimitedSession(): Session = Session(
     status = status,
     submitted = submitted,
     ownerNotes = ownerNotes,
-    beginning = beginning,
-    end = end,
     videoURL = videoURL,
     rating = rating,
     event = event.toEvent(),
@@ -56,10 +54,26 @@ fun Session.toDB(): SessionDB = SessionDB(
     submitted = submitted,
     ownerNotes = ownerNotes,
     event = event.toDB(),
-    beginning = beginning,
-    end = end,
     videoURL = videoURL,
     rating = rating,
     barcode = null,
     slot = slot?.toDB()
+)
+
+fun ManualSessionDB.toManualSession() = ManualSession(
+    id = id,
+    title = title,
+    description = description,
+    event = eventDB.toEvent(),
+    format = format,
+    theme = theme
+)
+
+fun ManualSession.toDB() = ManualSessionDB(
+    id = id,
+    title = title,
+    description = description,
+    eventDB = event.toDB(),
+    format = format,
+    theme = theme
 )

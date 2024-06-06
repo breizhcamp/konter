@@ -16,11 +16,26 @@ interface SessionRepo: JpaRepository<SessionDB, Int>, SessionRepoCustom {
     """)
     fun addBarcode(id: Int, barcode: String)
 
+    @Query("""
+        SELECT CASE WHEN
+            (SELECT count(*) FROM slot WHERE slot.session_id = ?) = 0
+            THEN FALSE
+            ELSE TRUE
+        END
+    """, nativeQuery = true)
+    fun hasSlotById(id: Int): Boolean
+
+    @Modifying
+    @Query("""
+        UPDATE slot SET session_id = null WHERE session_id = ?
+    """, nativeQuery = true)
+    fun removeSlotById(id: Int)
+
     @Modifying
     @Query("""
         UPDATE slot SET session_id = ? WHERE id = ?
     """, nativeQuery = true)
-    fun setSlot(id: Int, slotId: UUID)
+    fun setSlotById(id: Int, slotId: UUID)
 
     @Query("""
         SELECT slot.id FROM SlotDB slot WHERE slot.barcode = ?1

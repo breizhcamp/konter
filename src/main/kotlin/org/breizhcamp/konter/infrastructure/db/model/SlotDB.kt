@@ -17,6 +17,9 @@ data class SlotDB(
     @OneToOne
     @JoinColumn(name = "session_id")
     val session: SessionDB?,
+    @OneToOne
+    @JoinColumn(name = "manual_session_id")
+    val manualSession: ManualSessionDB?,
     @ManyToOne
     @JoinTable(
         name = "held",
@@ -35,4 +38,36 @@ data class SlotDB(
     @JdbcTypeCode(SqlTypes.INTERVAL_SECOND)
     val duration: Duration,
     val barcode: String?,
-)
+    val title: String?
+) {
+    override fun hashCode(): Int {
+        var hash = 0
+
+        for (item in this.javaClass.fields.filter {
+            it.name != "session" && it.name != "manualSession"
+        }) {
+            hash += item.hashCode()
+            hash *= 32
+        }
+
+        return hash
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as SlotDB
+
+        if (id != other.id) return false
+        if (day != other.day) return false
+        if (event != other.event) return false
+        if (halls != other.halls) return false
+        if (start != other.start) return false
+        if (duration != other.duration) return false
+        if (barcode != other.barcode) return false
+        if (title != other.title) return false
+
+        return true
+    }
+}

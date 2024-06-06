@@ -75,6 +75,13 @@ class SlotController (
         }
     }
 
+    @GetMapping("/{id}")
+    fun getSlot(@PathVariable id: UUID): SlotDTO {
+        logger.info { "Retrieving Slot:$id" }
+
+        return slotCrud.get(id).toDto()
+    }
+
     @DeleteMapping("/{id}")
     fun deleteSlot(@PathVariable id: UUID): ResponseEntity<Unit> {
         logger.info { "Deleting Slot:$id" }
@@ -123,5 +130,6 @@ fun Slot.toDto(): SlotDTO = SlotDTO(
     start = start,
     duration = duration,
     barcode = barcode,
-    span = span
+    span = span,
+    title = title
 )

@@ -10,9 +10,11 @@ fun SlotDB.toSlot(): Slot = Slot(
     duration = duration,
     halls = halls.map { it.toHall() },
     session = session?.toLimitedSession(),
+    manualSession = manualSession?.toManualSession(),
     event = event.toEvent(),
     barcode = barcode,
-    span = 1
+    span = 1,
+    title = title
 )
 
 fun SlotDB.toLimitedSlot(): Slot = Slot(
@@ -22,18 +24,22 @@ fun SlotDB.toLimitedSlot(): Slot = Slot(
     duration = duration,
     halls = halls.map { it.toHall() },
     session = null,
+    manualSession = null,
     event = event.toEvent(),
     barcode = barcode,
-    span = 1
+    span = 1,
+    title = title
 )
 
 fun Slot.toDB(): SlotDB = SlotDB(
     id = id,
     day = day,
     session = session?.toDB(),
+    manualSession = manualSession?.toDB(),
     event = event.toDB(),
     halls = halls.map{ it.toDB() }.toSet(),
     start = start,
     duration = duration,
-    barcode = barcode
+    barcode = barcode,
+    title = title
 )

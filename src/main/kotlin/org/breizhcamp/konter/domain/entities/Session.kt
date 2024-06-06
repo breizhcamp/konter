@@ -20,8 +20,6 @@ data class Session(
     val submitted: LocalDateTime,
     val ownerNotes: String,
     val event: Event,
-    val beginning: LocalDateTime?,
-    val end: LocalDateTime?,
     val videoURL: String?,
     val rating: BigDecimal?,
     val slot: Slot?

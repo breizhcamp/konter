@@ -39,9 +39,6 @@ data class SessionDB(
     @ManyToOne
     @JoinColumn(name = "event_id", nullable = true)
     val event: EventDB,
-    val beginning: LocalDateTime?,
-    @Column(name = "\"end\"")
-    val end: LocalDateTime?,
     @Column(name = "video_url")
     val videoURL: String?,
     val rating: BigDecimal?,
