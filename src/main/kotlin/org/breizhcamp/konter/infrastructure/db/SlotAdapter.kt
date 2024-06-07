@@ -11,15 +11,15 @@ import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
 import org.breizhcamp.konter.infrastructure.db.mappers.*
 import org.breizhcamp.konter.infrastructure.db.model.HallDB
 import org.breizhcamp.konter.infrastructure.db.model.SlotDB
-import org.breizhcamp.konter.infrastructure.db.repos.EventRepo
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
+import org.breizhcamp.konter.infrastructure.db.repos.SlotRepo
 import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
 class SlotAdapter (
+    private val slotRepo: SlotRepo,
     private val hallRepo: HallRepo,
-    private val eventRepo: EventRepo
 ): SlotPort {
 
     @Throws
@@ -29,7 +29,7 @@ class SlotAdapter (
         val end = req.start.plus(req.duration)
         val day = req.day
 
-        val existingSlots: MutableList<SlotDB> = hallRepo.getSlotsByHallIdAndEventId(hallId, eventId).toMutableList()
+        val existingSlots: MutableList<SlotDB> = slotRepo.getByHallIdAndEventId(hallId, eventId).toMutableList()
 
         val overlappingSlot = existingSlots.filter {
             it.day == day
@@ -67,14 +67,14 @@ class SlotAdapter (
             throw HallNotFoundException("Hall with id $hallId not found in database")
         }
 
-        hallRepo.addSlotToHall(hallId, eventId, req.day, req.start, req.duration.seconds, barcode)
-        return hallRepo.getSlotByBarcode(barcode).toSlot()
+        slotRepo.create(hallId, eventId, req.day, req.start, req.duration.seconds, barcode)
+        return slotRepo.getByBarcodeAndEventId(barcode, eventId).toSlot()
     }
 
-    override fun getById(id: UUID): Slot = hallRepo.getSlotById(id).toSlot()
+    override fun getById(id: UUID): Slot = slotRepo.findById(id).get().toSlot()
 
     override fun getProgram (eventId: Int): Map<Int, Map<Hall, List<Slot>>> {
-        val allSlots = eventRepo.getAllSlotsByEventId(eventId)
+        val allSlots = slotRepo.getAllByEventId(eventId)
         val availableHalls = hallRepo.getAllByAvailableEventId(eventId)
         val dayMap = emptyMap<Int, MutableMap<Hall, MutableList<Slot>>>().toMutableMap()
 
@@ -120,20 +120,20 @@ class SlotAdapter (
 
     @Transactional
     override fun remove(id: UUID) =
-        hallRepo.removeSlot(id)
+        slotRepo.deleteById(id)
 
     @Transactional
     override fun associateHall(id: UUID, eventId: Int, hallId: Int): Slot {
-        hallRepo.associateSlot(hallId, eventId, id)
+        slotRepo.associateToHallAndEvent(id, hallId, eventId)
 
-        return hallRepo.getSlotById(id).toSlot()
+        return getById(id)
     }
 
     @Transactional
     override fun dissociateHall(id: UUID, hallId: Int): Slot {
-        hallRepo.dissociateSlot(hallId, id)
+        slotRepo.dissocateFromHall(id, hallId)
 
-        return hallRepo.getSlotById(id).toSlot()
+        return getById(id)
     }
 
     private fun SlotDB.toSpanSlot(availableHalls: List<HallDB>, hall: HallDB): Slot {
