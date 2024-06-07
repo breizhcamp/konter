@@ -17,12 +17,15 @@ import com.itextpdf.layout.properties.HorizontalAlignment
 import com.itextpdf.layout.properties.TextAlignment
 import com.itextpdf.layout.properties.UnitValue
 import com.itextpdf.layout.properties.VerticalAlignment
+import mu.KotlinLogging
 import org.breizhcamp.konter.domain.use_cases.ports.HallPort
 import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
 import org.springframework.stereotype.Service
 import java.io.OutputStream
 import java.time.Duration
 import java.time.LocalTime
+
+private val logger = KotlinLogging.logger {  }
 
 @Service
 class SlotGenerateProgram (
@@ -162,6 +165,8 @@ class SlotGenerateProgram (
         }
 
         document.close()
+
+        logger.info { "Generated program for Event:$eventId"}
     }
 
     private fun formatTime(time: LocalTime): String {
