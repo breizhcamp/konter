@@ -5,11 +5,9 @@ import org.breizhcamp.konter.domain.entities.Event
 
 interface EventPort {
 
-    fun existsByYear(year: Int): Boolean
+    fun existsById(id: Int): Boolean
     fun getById(id: Int): Event
-    fun getByYear(year: Int): Event
     fun save(event: Event)
     fun save(events: List<Event>)
-    fun create(request: EventCreationReq): Int
 
 }
