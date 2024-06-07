@@ -31,7 +31,7 @@ class SessionController (
 
     @GetMapping("/{eventId}")
     fun listSessions(@PathVariable eventId: Int): List<SessionDTO> {
-        logger.info { "Listing Sessions from eventId $eventId" }
+        logger.info { "Listing Sessions from Event:$eventId" }
 
         return sessionList.list(eventId).map { it.toDto() }
     }
