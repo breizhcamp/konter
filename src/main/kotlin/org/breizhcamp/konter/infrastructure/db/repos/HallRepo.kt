@@ -1,13 +1,10 @@
 package org.breizhcamp.konter.infrastructure.db.repos
 
 import org.breizhcamp.konter.infrastructure.db.model.HallDB
-import org.breizhcamp.konter.infrastructure.db.model.SlotDB
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
-import java.time.LocalTime
-import java.util.*
 
 @Repository
 interface HallRepo: JpaRepository<HallDB, Int> {
@@ -59,52 +56,5 @@ interface HallRepo: JpaRepository<HallDB, Int> {
         UPDATE available SET "order" = ?3 WHERE hall_id = ?1 AND event_id = ?2
     """, nativeQuery = true)
     fun setOrderInEvent(id: Int, eventId: Int, order: Int?)
-
-    @Modifying
-    @Query("""
-        WITH s_id as (
-            INSERT INTO slot(day, start, duration, barcode, id)
-            VALUES (?3, CAST(?4 AS TIME), ?5 * INTERVAL '1 second', ?6, gen_random_uuid())
-            RETURNING id
-        )
-        INSERT INTO held(hall_id, event_id, slot_id) 
-        SELECT ?1, ?2, s_id.id FROM s_id
-    """, nativeQuery = true)
-    fun addSlotToHall(id: Int, eventId: Int, day: Int, start: LocalTime, duration: Long, barcode: String?)
-
-    @Query("""
-        SELECT slot FROM SlotDB slot WHERE slot.event.id = ?2 AND ?1 IN (
-            SELECT hall.id FROM slot.halls hall
-        )
-    """)
-    fun getSlotsByHallIdAndEventId(hallId: Int, eventId: Int): List<SlotDB>
-
-    @Query("""
-        SELECT slot FROM SlotDB slot WHERE slot.barcode = ?1
-    """)
-    fun getSlotByBarcode(barcode: String): SlotDB
-
-    @Modifying
-    @Query("""
-        INSERT INTO held(hall_id, event_id, slot_id) VALUES (?1, ?2, ?3)
-    """, nativeQuery = true)
-    fun associateSlot(hallId: Int, eventId: Int, slotId: UUID)
-
-    @Modifying
-    @Query("""
-        DELETE FROM held WHERE slot_id = ?2 and hall_id = ?1
-    """, nativeQuery = true)
-    fun dissociateSlot(hallId: Int, slotId: UUID)
-
-    @Query("""
-        SELECT slot FROM SlotDB slot WHERE slot.id = ?1
-    """)
-    fun getSlotById(id: UUID): SlotDB
-
-    @Modifying
-    @Query("""
-        DELETE SlotDB slot WHERE slot.id = ?1
-    """)
-    fun removeSlot(slotId: UUID)
 
 }
