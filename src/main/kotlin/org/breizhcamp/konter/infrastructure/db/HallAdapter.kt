@@ -48,7 +48,7 @@ class HallAdapter (
 
     @Transactional
     override fun update(id: Int, req: HallPatchReq): Hall {
-        val hall = hallRepo.findById(id).get().copy(name = req.name, trackId = req.id)
+        val hall = hallRepo.findById(id).get().copy(name = req.name, trackId = req.trackId)
         return hallRepo.save(hall).toHall()
     }
 
