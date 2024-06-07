@@ -2,6 +2,7 @@ package org.breizhcamp.konter.domain.use_cases
 
 import com.ninjasquad.springmockk.MockkBean
 import org.breizhcamp.konter.domain.use_cases.ports.SessionPort
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +22,7 @@ class SessionGenerateCardsTest {
     private lateinit var sessionGenerateCards: SessionGenerateCards
 
     @Test
-    fun generatePdf() {
-        TODO("should it be done ?")
+    @Disabled("Discuss PDF generation testing")
+    fun generatePdf(){
     }
 }

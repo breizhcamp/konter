@@ -3,6 +3,7 @@ package org.breizhcamp.konter.domain.use_cases
 import com.ninjasquad.springmockk.MockkBean
 import org.breizhcamp.konter.domain.use_cases.ports.HallPort
 import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,7 +27,8 @@ class SlotGenerateProgramTest {
     private lateinit var slotGenerateProgram: SlotGenerateProgram
 
     @Test
+    @Disabled("Discuss PDF generation testing")
     fun generateEmptyProgramPdf() {
-        TODO("should it be done ?")
+
     }
 }
