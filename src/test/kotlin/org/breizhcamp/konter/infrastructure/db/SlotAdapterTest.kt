@@ -1,7 +1,7 @@
 package org.breizhcamp.konter.infrastructure.db
 
 import com.ninjasquad.springmockk.MockkBean
-import org.breizhcamp.konter.infrastructure.db.repos.EventRepo
+import org.breizhcamp.konter.infrastructure.db.repos.SlotRepo
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -17,7 +17,7 @@ class SlotAdapterTest {
     private lateinit var hallRepo: HallRepo
 
     @MockkBean
-    private lateinit var eventRepo: EventRepo
+    private lateinit var slotRepo: SlotRepo
 
     @Autowired
     private lateinit var slotAdapter: SlotAdapter
