@@ -27,18 +27,18 @@ class HallController (
         return hallCRUD.listAll().map { it.toDto() }
     }
 
-    @PostMapping
-    fun createHall(@RequestBody req: HallCreationReq): HallDTO {
-        logger.info { "Creating a Hall with name ${req.name} and trackId ${req.trackId}" }
-
-        return hallCRUD.create(req).toDto()
-    }
-
     @GetMapping("/{eventId}")
     fun listByEvent(@PathVariable eventId: Int): List<HallDTO> {
         logger.info { "Listing Halls available for Event:$eventId" }
 
         return hallCRUD.listByEvent(eventId).map { it.toDto() }
+    }
+
+    @PostMapping
+    fun createHall(@RequestBody req: HallCreationReq): HallDTO {
+        logger.info { "Creating a Hall with name ${req.name} and trackId ${req.trackId}" }
+
+        return hallCRUD.create(req).toDto()
     }
 
     @PatchMapping("/{id}")
