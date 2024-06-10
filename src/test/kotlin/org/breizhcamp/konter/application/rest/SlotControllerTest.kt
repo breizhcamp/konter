@@ -79,8 +79,8 @@ class SlotControllerTest {
         assert(output.contains("Listing all slots in Event:$eventId grouping by Hall"))
 
         assert(result.containsKey(day))
-        assert(result[day]!!.containsKey(hall.id))
-        assertEquals(slots.map(Slot::toDto), result[day]!![hall.id])
+        assert(requireNotNull(result[day]).containsKey(hall.id))
+        assertEquals(slots.map(Slot::toDto), requireNotNull(result[day])[hall.id])
 
         verify { slotCrud.list(eventId) }
     }

@@ -110,9 +110,15 @@ class SlotGenerateProgram (
 
                     halls.forEachIndexed { index, hall ->
                         if (tracks.containsKey(hall)) {
-                            val slot = tracks[hall]!!.find { it.start == time || (it.start.isAfter(time) && it.start.isBefore(time.plus(Duration.ofMinutes(segmentMinutes)))) }
+                            val slot = requireNotNull(tracks[hall])
+                                .find {
+                                    it.start == time || (
+                                    it.start.isAfter(time) &&
+                                    it.start.isBefore(time.plus(Duration.ofMinutes(segmentMinutes))))
+                                }
                             if (slot == null) {
-                                val slotsOverTime = tracks[hall]!!.filter { it.start.isBefore(time) && it.start.plus(it.duration).isAfter(time) }
+                                val slotsOverTime = requireNotNull(tracks[hall])
+                                    .filter { it.start.isBefore(time) && it.start.plus(it.duration).isAfter(time) }
                                 if (slotsOverTime.isNotEmpty()) {
                                     occupiedColumns += slotsOverTime.first().span
                                 }

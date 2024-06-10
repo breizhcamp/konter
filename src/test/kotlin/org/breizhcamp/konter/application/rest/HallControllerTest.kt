@@ -85,7 +85,10 @@ class HallControllerTest {
 
         @Test
         fun `createHall should log, call CRUD with its input and return the result as a DTO`(output: CapturedOutput) {
-            val request = HallCreationReq(name = hall.name!!, trackId = hall.trackId)
+            val request = HallCreationReq(
+                name = requireNotNull(hall.name),
+                trackId = hall.trackId
+            )
             every { hallCRUD.create(request) } returns hall
 
             assertEquals(hall.toDto(), hallController.createHall(request))
@@ -98,7 +101,10 @@ class HallControllerTest {
 
         @Test
         fun `patchHall should log, call CRUD with its input and return the result as a DTO`(output: CapturedOutput) {
-            val request = HallPatchReq(name = hall.name!!, trackId = hall.trackId)
+            val request = HallPatchReq(
+                name = requireNotNull(hall.name),
+                trackId = hall.trackId
+            )
             every { hallCRUD.update(hall.id, request) } returns hall
 
             assertEquals(hall.toDto(), hallController.patchHall(hall.id, request))
