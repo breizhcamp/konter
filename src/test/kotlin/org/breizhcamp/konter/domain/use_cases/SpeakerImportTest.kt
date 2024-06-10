@@ -22,9 +22,6 @@ class SpeakerImportTest {
 
     @Test
     fun importCsv() {
-    }
-
-    @Test
-    fun getSpeakerPort() {
+        TODO("Test with sample csv file and fixed result")
     }
 }
