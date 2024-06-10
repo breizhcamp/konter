@@ -10,7 +10,7 @@ interface HallPort {
     fun create(req: HallCreationReq): Hall
     fun associateToEvent(id: Int, eventId: Int): Hall
     fun dissociateFromEvent(id: Int, eventId: Int): Hall
-    fun setOrderInEvent(id: Int, eventId: Int, order: Int?)
+    fun setOrderInEvent(id: Int, eventId: Int, order: Int?): Hall
     fun update(id: Int, req: HallPatchReq): Hall
     fun delete(id: Int)
 

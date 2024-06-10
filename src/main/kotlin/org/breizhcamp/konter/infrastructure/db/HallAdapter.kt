@@ -43,8 +43,10 @@ class HallAdapter (
     }
 
     @Transactional
-    override fun setOrderInEvent(id: Int, eventId: Int, order: Int?) =
+    override fun setOrderInEvent(id: Int, eventId: Int, order: Int?): Hall {
         hallRepo.setOrderInEvent(id, eventId, order)
+        return hallRepo.findById(id).get().toHall()
+    }
 
     @Transactional
     override fun update(id: Int, req: HallPatchReq): Hall {

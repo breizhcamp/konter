@@ -70,10 +70,10 @@ class HallController (
     }
 
     @PatchMapping("/{id}/event/{eventId}/{order}")
-    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int?) {
+    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int?): HallDTO {
         logger.info { "Updating order of Hall:$id for Event:$eventId to $order" }
 
-        hallSetOrder.setOrder(id, eventId, order)
+        return hallSetOrder.setOrder(id, eventId, order).toDto()
     }
 
 }
