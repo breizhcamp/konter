@@ -88,7 +88,7 @@ class SessionController (
 
     @PostMapping("/manual/{eventId}")
     fun createManualSession(@PathVariable eventId: Int, @RequestBody request: SessionCreationReq): ManualSessionDTO {
-        logger.info("Creating ManualSession for Event:$eventId with title:${request.title}")
+        logger.info { "Creating ManualSession for Event:$eventId with title:${request.title}" }
 
         return manualSessionCRUD.create(request, eventId).toDto()
     }
