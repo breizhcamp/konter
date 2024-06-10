@@ -73,14 +73,14 @@ class SessionController (
     }
 
     @PostMapping("/{id}/slot/id/{slotId}")
-    fun setSession(@PathVariable id: Int, @PathVariable slotId: UUID): SessionDTO {
+    fun setSlot(@PathVariable id: Int, @PathVariable slotId: UUID): SessionDTO {
         logger.info { "Setting Session:$id to Slot:$slotId" }
 
         return slotSetSession.setById(id, slotId).toDto()
     }
 
     @PostMapping("/{id}/slot/barcode/{barcode}")
-    fun setSession(@PathVariable id: Int, @PathVariable barcode: String): SessionDTO {
+    fun setSlot(@PathVariable id: Int, @PathVariable barcode: String): SessionDTO {
         logger.info { "Setting Session:$id to Slot with barcode $barcode" }
 
         return slotSetSession.setByBarcode(id, barcode).toDto()
