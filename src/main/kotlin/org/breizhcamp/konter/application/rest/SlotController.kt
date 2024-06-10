@@ -83,11 +83,10 @@ class SlotController (
     }
 
     @DeleteMapping("/{id}")
-    fun deleteSlot(@PathVariable id: UUID): ResponseEntity<Unit> {
+    fun deleteSlot(@PathVariable id: UUID) {
         logger.info { "Deleting Slot:$id" }
 
         slotCrud.delete(id)
-        return ResponseEntity.ok(Unit)
     }
 
     @GetMapping("/program/{eventId}")
