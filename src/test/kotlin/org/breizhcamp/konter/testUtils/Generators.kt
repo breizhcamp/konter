@@ -5,6 +5,7 @@ import org.breizhcamp.konter.domain.entities.enums.SessionFormatEnum
 import org.breizhcamp.konter.domain.entities.enums.SessionNiveauEnum
 import org.breizhcamp.konter.domain.entities.enums.SessionStatusEnum
 import org.breizhcamp.konter.domain.entities.enums.SessionThemeEnum
+import org.breizhcamp.konter.infrastructure.db.model.*
 import java.math.BigDecimal
 import java.time.Duration
 import java.time.LocalDateTime
@@ -50,8 +51,28 @@ class HallGen: Generator<Hall> {
     )
 }
 
+class HallDBGen: Generator<HallDB> {
+    override fun generateOne(): HallDB = HallDB(
+        id = Random.nextInt().absoluteValue,
+        name = generateRandomHexString(),
+        trackId = Random.nextInt().absoluteValue
+    )
+}
+
 class SpeakerGen: Generator<Speaker> {
     override fun generateOne(): Speaker = Speaker(
+        id = UUID.randomUUID(),
+        lastname = generateRandomHexString(),
+        firstname = generateRandomHexString(),
+        email = generateRandomHexString(),
+        tagLine = generateRandomHexString(),
+        bio = generateRandomHexString(),
+        profilePicture = generateRandomHexString()
+    )
+}
+
+class SpeakerDBGen: Generator<SpeakerDB> {
+    override fun generateOne(): SpeakerDB = SpeakerDB(
         id = UUID.randomUUID(),
         lastname = generateRandomHexString(),
         firstname = generateRandomHexString(),
@@ -69,6 +90,15 @@ class EventGen: Generator<Event> {
         name = generateRandomHexString()
     )
 
+}
+
+class EventDBGen: Generator<EventDB> {
+    override fun generateOne(): EventDB = EventDB(
+        id = Random.nextInt().absoluteValue,
+        year = Random.nextInt(2020, 2030),
+        name = generateRandomHexString(),
+        halls = emptySet()
+    )
 }
 
 class SessionGen: Generator<Session> {
@@ -104,6 +134,38 @@ class SessionGen: Generator<Session> {
     }
 }
 
+class SessionDBGen: Generator<SessionDB> {
+    override fun generateOne(): SessionDB {
+        val owner = SpeakerDBGen().generateOne()
+        val speakers = SpeakerDBGen().generateList().toSet()
+        speakers.plus(owner)
+
+        val format = SessionFormatEnum.entries.random()
+        val theme  = SessionThemeEnum .entries.random()
+        val niveau = SessionNiveauEnum.entries.random()
+        val status = SessionStatusEnum.entries.random()
+
+        return SessionDB(
+            id = Random.nextInt().absoluteValue,
+            title = generateRandomHexString(),
+            description = generateRandomHexString(8),
+            owner = owner,
+            speakers = speakers,
+            format = format,
+            theme = theme,
+            niveau = niveau,
+            status = status,
+            submitted = generateRandomLocalDateTime(),
+            ownerNotes = generateRandomHexString(),
+            event = EventDBGen().generateOne(),
+            videoURL = generateRandomHexString(),
+            rating = BigDecimal.valueOf(Random.nextDouble(0.0, 5.0)),
+            barcode = generateRandomHexString(),
+            slot = null
+        )
+    }
+}
+
 class ManualSessionGen: Generator<ManualSession> {
     override fun generateOne(): ManualSession {
         val format = SessionFormatEnum.entries.random()
@@ -118,7 +180,22 @@ class ManualSessionGen: Generator<ManualSession> {
             theme = theme
         )
     }
+}
 
+class ManualSessionDBGen: Generator<ManualSessionDB> {
+    override fun generateOne(): ManualSessionDB {
+        val format = SessionFormatEnum.entries.random()
+        val theme  = SessionThemeEnum .entries.random()
+
+        return ManualSessionDB(
+            id = Random.nextInt().absoluteValue,
+            title = generateRandomHexString(),
+            description = generateRandomHexString(),
+            event = EventDBGen().generateOne(),
+            format = format,
+            theme = theme
+        )
+    }
 }
 
 class SlotGen: Generator<Slot> {
@@ -133,6 +210,21 @@ class SlotGen: Generator<Slot> {
         duration = Duration.ofMinutes(Random.nextLong(15, 120)),
         barcode = generateRandomHexString(),
         span = Random.nextInt(1, 5),
+        title = generateRandomHexString()
+    )
+}
+
+class SlotDBGen: Generator<SlotDB> {
+    override fun generateOne(): SlotDB = SlotDB(
+        id = UUID.randomUUID(),
+        day = Random.nextInt(0, 5),
+        session = SessionDBGen().generateOne(),
+        manualSession = null,
+        event = EventDBGen().generateOne(),
+        halls = HallDBGen().generateList().toSet(),
+        start = generateRandomLocalDateTime().toLocalTime(),
+        duration = Duration.ofMinutes(Random.nextLong(15, 120)),
+        barcode = generateRandomHexString(),
         title = generateRandomHexString()
     )
 }
