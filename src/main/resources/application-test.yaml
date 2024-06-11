@@ -1,4 +1,5 @@
 konter:
   kalon:
-    enabled: false
+    enabled: true
+    url: http://localhost:9999
     secured: false
