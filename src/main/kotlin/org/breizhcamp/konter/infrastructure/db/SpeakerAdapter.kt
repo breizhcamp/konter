@@ -1,7 +1,6 @@
 package org.breizhcamp.konter.infrastructure.db
 
 import org.breizhcamp.konter.domain.entities.Speaker
-import org.breizhcamp.konter.domain.entities.SpeakerFilter
 import org.breizhcamp.konter.domain.use_cases.ports.SpeakerPort
 import org.breizhcamp.konter.infrastructure.db.mappers.toDB
 import org.breizhcamp.konter.infrastructure.db.mappers.toSpeaker
@@ -15,10 +14,6 @@ class SpeakerAdapter (
 ): SpeakerPort {
     override fun list(): List<Speaker> =
         speakerRepo.findAll().map { it.toSpeaker() }
-
-    override fun filter(filter: SpeakerFilter): List<Speaker> {
-        TODO("Not yet implemented")
-    }
 
     override fun get(id: UUID): Speaker =
         speakerRepo.findById(id).get().toSpeaker()
