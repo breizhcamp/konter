@@ -56,7 +56,7 @@ class SlotAdapter (
             val barcodeBuilder = StringBuilder()
             barcodeBuilder.append(day)
             barcodeBuilder.append(eventId)
-            barcodeBuilder.append(hallId)
+            barcodeBuilder.append(hall.get().trackId)
             barcodeBuilder.append("${start.hour}".padStart(2, '0'))
             barcodeBuilder.append("${start.minute}".padStart(2, '0'))
             barcodeBuilder.append("0".repeat(12 - barcodeBuilder.length))
