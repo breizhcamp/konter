@@ -15,6 +15,7 @@ class SpeakerAdapter (
     override fun list(): List<Speaker> =
         speakerRepo.findAll().map { it.toSpeaker() }
 
+    @Throws
     override fun get(id: UUID): Speaker =
         speakerRepo.findById(id).get().toSpeaker()
 
