@@ -14,6 +14,7 @@ class EventAdapter (
     override fun existsById(id: Int): Boolean =
         eventRepo.existsById(id)
 
+    @Throws
     override fun getById(id: Int): Event =
         eventRepo.findById(id).get().toEvent()
 
