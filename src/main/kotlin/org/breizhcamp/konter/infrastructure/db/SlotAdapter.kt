@@ -14,6 +14,7 @@ import org.breizhcamp.konter.infrastructure.db.model.SlotDB
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
 import org.breizhcamp.konter.infrastructure.db.repos.SlotRepo
 import org.springframework.stereotype.Component
+import java.time.LocalTime
 import java.util.*
 
 @Component
@@ -25,11 +26,37 @@ class SlotAdapter (
     @Throws
     @Transactional
     override fun create(hallId: Int, eventId: Int, req: SlotCreationReq): Slot {
+        throwIfOverlapped(hallId, eventId, req)
+
+        val hall = hallRepo.findById(hallId)
+
+        val barcode: String?
+        if (hall.isPresent && hall.get().trackId != null) {
+            barcode = computeBarcode(
+                req.day,
+                eventId,
+                requireNotNull(hall.get().trackId) {
+                    "Hall:${hall.get().id}.trackId should not be null at this point"
+                },
+                req.start
+            )
+        } else {
+            throw HallNotFoundException("Hall with id $hallId not found in database or does not have a trackId assigned")
+        }
+
+        slotRepo.create(hallId, eventId, req.day, req.start, req.duration.seconds, barcode)
+        return slotRepo.getByBarcodeAndEventId(barcode, eventId).toSlot()
+    }
+
+    @Throws
+    fun throwIfOverlapped(hallId: Int, eventId: Int, req: SlotCreationReq) {
         val start = req.start
         val end = req.start.plus(req.duration)
         val day = req.day
 
-        val existingSlots: MutableList<SlotDB> = slotRepo.getByHallIdAndEventId(hallId, eventId).toMutableList()
+        val existingSlots: MutableList<SlotDB> =
+            slotRepo.getByHallIdAndEventId(hallId, eventId)
+                .toMutableList()
 
         val overlappingSlot = existingSlots.filter {
             it.day == day
@@ -37,8 +64,8 @@ class SlotAdapter (
             Pair(slot.start, slot.start.plus(slot.duration))
         }.find { range ->
             (start >= range.first && start < range.second) ||
-            (end > range.first && end <= range.second) ||
-            (start < range.first && end > range.second)
+                    (end > range.first && end <= range.second) ||
+                    (start < range.first && end > range.second)
         }
 
         if (overlappingSlot != null) {
@@ -48,27 +75,19 @@ class SlotAdapter (
                         "${overlappingSlot.second}"
             )
         }
+    }
 
-        val hall = hallRepo.findById(hallId)
+    fun computeBarcode(day: Int, eventId: Int, trackId: Int, start: LocalTime): String {
+        val barcodeBuilder = StringBuilder()
+        barcodeBuilder.append(day)
+        barcodeBuilder.append(eventId)
+        barcodeBuilder.append(trackId)
+        barcodeBuilder.append("${start.hour}".padStart(2, '0'))
+        barcodeBuilder.append("${start.minute}".padStart(2, '0'))
+        barcodeBuilder.append("0".repeat(12 - barcodeBuilder.length))
 
-        val barcode: String?
-        if (hall.isPresent && hall.get().trackId != null) {
-            val barcodeBuilder = StringBuilder()
-            barcodeBuilder.append(day)
-            barcodeBuilder.append(eventId)
-            barcodeBuilder.append(hall.get().trackId)
-            barcodeBuilder.append("${start.hour}".padStart(2, '0'))
-            barcodeBuilder.append("${start.minute}".padStart(2, '0'))
-            barcodeBuilder.append("0".repeat(12 - barcodeBuilder.length))
-            barcodeBuilder.append(BarcodeEAN.calculateEANParity(barcodeBuilder.toString()))
-
-            barcode = barcodeBuilder.toString()
-        } else {
-            throw HallNotFoundException("Hall with id $hallId not found in database")
-        }
-
-        slotRepo.create(hallId, eventId, req.day, req.start, req.duration.seconds, barcode)
-        return slotRepo.getByBarcodeAndEventId(barcode, eventId).toSlot()
+        val result = barcodeBuilder.toString()
+        return result + BarcodeEAN.calculateEANParity(result)
     }
 
     override fun getById(id: UUID): Slot = slotRepo.findById(id).get().toSlot()
@@ -76,7 +95,7 @@ class SlotAdapter (
     override fun getProgram (eventId: Int): Map<Int, Map<Hall, List<Slot>>> {
         val allSlots = slotRepo.getAllByEventId(eventId)
         val availableHalls = hallRepo.getAllByAvailableEventId(eventId)
-        val dayMap = emptyMap<Int, MutableMap<Hall, MutableList<Slot>>>().toMutableMap()
+        val dayMap = mutableMapOf<Int, MutableMap<Hall, MutableList<Slot>>>()
 
         val days = allSlots.map { it.day }.toSortedSet()
 
@@ -86,25 +105,22 @@ class SlotAdapter (
                 .filter { it.day == day }
                 .sortedBy { it.start }
                 .toMutableList()
-            val tracks = emptyMap<Hall, MutableList<Slot>>().toMutableMap()
+            val tracks = mutableMapOf<Hall, MutableList<Slot>>()
 
             availableHalls.forEach { hall ->
                 val slots = daySlots
                     .filter { it.halls.contains(hall) }
                     .toMutableList()
-                val trackSlots = emptyList<Slot>().toMutableList()
+                val trackSlots = mutableListOf<Slot>()
                 for (slot in slots) {
                     val spanSlot = slot.toSpanSlot(availableHalls, hall)
-                    slots[slots.indexOf(slot)] = slot
+                    val newSlot = slot
                         .copy(halls = slot.halls
                             .filter { spanSlot.halls
                                 .find { h -> h.id == it.id } != null
                             }.toSet())
-                    daySlots[daySlots.indexOf(slot)] = slot
-                        .copy(halls = slot.halls
-                            .filter { spanSlot.halls
-                                .find { h -> h.id == it.id } != null
-                            }.toSet())
+                    slots[slots.indexOf(slot)] = newSlot
+                    daySlots[daySlots.indexOf(slot)] = newSlot
 
                     trackSlots.add(spanSlot)
                 }
