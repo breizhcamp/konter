@@ -56,16 +56,15 @@ class SlotController (
         return result
     }
 
-    @PostMapping("/{eventId}/{hallId}")
+    @PostMapping("/{eventId}")
     fun addSlotToHall(
         @PathVariable eventId: Int,
-        @PathVariable hallId: Int,
         @RequestBody slotReq: SlotCreationReq
     ): ResponseEntity<Any> {
-        logger.info { "Adding slot to Hall:$hallId in Event:$eventId" }
+        logger.info { "Adding slot in Event:$eventId" }
 
         return try {
-            ResponseEntity.ok(slotCrud.create(hallId, eventId, slotReq).toDto())
+            ResponseEntity.ok(slotCrud.create(eventId, slotReq).toDto())
         } catch (e: TimeConflictException) {
             logger.error { e }
             ResponseEntity.status(HttpStatus.CONFLICT).body(e.message)
@@ -107,10 +106,17 @@ class SlotController (
     }
 
     @PostMapping("/hall/{slotId}/{eventId}/{hallId}")
-    fun assignHallToSlot(@PathVariable slotId: UUID, @PathVariable eventId: Int, @PathVariable hallId: Int): SlotDTO {
+    fun assignHallToSlot(
+        @PathVariable slotId: UUID, @PathVariable eventId: Int, @PathVariable hallId: Int
+    ): ResponseEntity<Any> {
         logger.info { "Assigning Hall:$hallId to Slot:$slotId in Event:$eventId" }
 
-        return slotAssociateHall.associate(slotId, eventId, hallId).toDto()
+        return try {
+            ResponseEntity.ok(slotAssociateHall.associate(slotId, eventId, hallId).toDto())
+        } catch (e: TimeConflictException) {
+            logger.error { e }
+            ResponseEntity.status(HttpStatus.CONFLICT).body(e.message)
+        }
     }
 
     @DeleteMapping("/hall/{slotId}/{hallId}")

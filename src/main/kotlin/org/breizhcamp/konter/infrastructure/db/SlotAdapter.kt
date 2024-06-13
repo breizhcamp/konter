@@ -25,26 +25,36 @@ class SlotAdapter (
 
     @Throws
     @Transactional
-    override fun create(hallId: Int, eventId: Int, req: SlotCreationReq): Slot {
-        throwIfOverlapped(hallId, eventId, req)
+    override fun create(eventId: Int, req: SlotCreationReq): Slot {
+        req.hallIds.forEach { hallId ->
+            throwIfOverlapped(hallId, eventId, req)
+        }
 
-        val hall = hallRepo.findById(hallId)
+        val halls = hallRepo.getAllByAvailableEventId(eventId)
+            .filter { it.id in req.hallIds }
 
+        val hall = halls.first()
         val barcode: String?
-        if (hall.isPresent && hall.get().trackId != null) {
+        if (hall.trackId != null) {
             barcode = computeBarcode(
                 req.day,
                 eventId,
-                requireNotNull(hall.get().trackId) {
-                    "Hall:${hall.get().id}.trackId should not be null at this point"
+                requireNotNull(hall.trackId) {
+                    "Hall:${hall.id}.trackId should not be null at this point"
                 },
                 req.start
             )
         } else {
-            throw HallNotFoundException("Hall with id $hallId not found in database or does not have a trackId assigned")
+            throw HallNotFoundException("Hall with id ${hall.id} does not have a trackId assigned")
         }
 
-        slotRepo.create(hallId, eventId, req.day, req.start, req.duration.seconds, barcode)
+        slotRepo.create(hall.id, eventId, req.day, req.start, req.duration.seconds, barcode)
+        val slotId = slotRepo.getByBarcodeAndEventId(barcode, eventId).id
+
+        halls.filter { it != hall }.map { it.id }.forEach { hallId ->
+            associateHall(slotId, eventId, hallId)
+        }
+
         return slotRepo.getByBarcodeAndEventId(barcode, eventId).toSlot()
     }
 
@@ -69,8 +79,9 @@ class SlotAdapter (
         }
 
         if (overlappingSlot != null) {
+            val hall = hallRepo.findById(hallId).get()
             throw TimeConflictException(
-                "Slot overlaps with an existing slot, which begins at " +
+                "Slot overlaps with an existing slot in Hall ${hall.name} (Track ${hall.trackId}), which begins at " +
                         "${overlappingSlot.first} and ends at " +
                         "${overlappingSlot.second}"
             )
