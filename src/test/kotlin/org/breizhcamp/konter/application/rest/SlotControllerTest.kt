@@ -32,6 +32,7 @@ import org.springframework.boot.test.system.OutputCaptureExtension
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.util.*
@@ -105,18 +106,18 @@ class SlotControllerTest {
         fun `addSlotToHall should log, call CRUD return a CONFLICT on TimeConflictException, NOT_FOUND on HallNotFoundException and the result as a DTO on no Exception`(scenario: Scenarios, output: CapturedOutput) {
             val hallId = Random.nextInt().absoluteValue
             val eventId = Random.nextInt().absoluteValue
-            val request = SlotCreationReq(slot.start, slot.day, slot.duration)
+            val request = SlotCreationReq(slot.start, slot.day, slot.duration, listOf(hallId))
 
             val message = generateRandomHexString()
 
             when(scenario) {
-                Scenarios.NO_EXCEPTION -> every { slotCrud.create(hallId, eventId, request) } returns slot
-                Scenarios.TIME_CONFLICT -> every { slotCrud.create(hallId, eventId, request) } throws TimeConflictException(message)
-                Scenarios.NOT_FOUND -> every { slotCrud.create(hallId, eventId, request) } throws HallNotFoundException(message)
+                Scenarios.NO_EXCEPTION -> every { slotCrud.create(eventId, request) } returns slot
+                Scenarios.TIME_CONFLICT -> every { slotCrud.create(eventId, request) } throws TimeConflictException(message)
+                Scenarios.NOT_FOUND -> every { slotCrud.create(eventId, request) } throws HallNotFoundException(message)
             }
 
-            val response = slotController.addSlotToHall(eventId, hallId, request)
-            assert(output.contains("Adding slot to Hall:$hallId in Event:$eventId"))
+            val response = slotController.addSlotToHall(eventId, request)
+            assert(output.contains("Adding slot in Event:$eventId"))
             when(scenario) {
                 Scenarios.NO_EXCEPTION -> {
                     assertEquals(slot.toDto(), response.body)
@@ -133,7 +134,7 @@ class SlotControllerTest {
                 }
             }
 
-            verify { slotCrud.create(hallId, eventId, request) }
+            verify { slotCrud.create(eventId, request) }
         }
 
         @Test
@@ -161,7 +162,10 @@ class SlotControllerTest {
             fun `assignHallToSlot should log, call AssociateHall and return the result as a DTO`(output: CapturedOutput) {
                 every { slotAssociateHall.associate(slot.id, eventId, hallId) } returns slot
 
-                assertEquals(slot.toDto(), slotController.assignHallToSlot(slot.id, eventId, hallId))
+                assertEquals(
+                    ResponseEntity.ok(slot.toDto()),
+                    slotController.assignHallToSlot(slot.id, eventId, hallId)
+                )
                 assert(output.contains("Assigning Hall:$hallId to Slot:${slot.id} in Event:$eventId"))
 
                 verify { slotAssociateHall.associate(slot.id, eventId, hallId) }

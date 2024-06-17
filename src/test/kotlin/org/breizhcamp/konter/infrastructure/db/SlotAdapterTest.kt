@@ -65,9 +65,10 @@ class SlotAdapterTest {
         val existingSlot = SlotDBGen().generateOne().copy(day = Random.nextInt(1, 10))
         val existingSlots = listOf(existingSlot)
 
-        val slotCreationReq = case.toSlotCreationReq(existingSlot)
+        val slotCreationReq = case.toSlotCreationReq(existingSlot, listOf(hall.id))
 
         every { slotRepo.getByHallIdAndEventId(hall.id, eventId) } returns existingSlots
+        every { hallRepo.findById(hall.id) } returns Optional.of(hall)
 
         when(case) {
             CreationCases.NoOverlapBefore,
@@ -75,6 +76,7 @@ class SlotAdapterTest {
                 assertDoesNotThrow {
                     slotAdapter.throwIfOverlapped(hall.id, eventId, slotCreationReq)
                 }
+                verify(exactly = 0) { hallRepo.findById(hall.id) }
             }
             CreationCases.OverlapBefore,
             CreationCases.OverlapAfter,
@@ -83,6 +85,7 @@ class SlotAdapterTest {
                 assertThrows<TimeConflictException> {
                     slotAdapter.throwIfOverlapped(hall.id, eventId, slotCreationReq)
                 }
+                verify { hallRepo.findById(hall.id) }
             }
         }
 
@@ -106,18 +109,18 @@ class SlotAdapterTest {
         val existingSlot = SlotDBGen().generateOne().copy(day = Random.nextInt(1, 10))
         val existingSlots = listOf(existingSlot)
 
-        val slotCreationReq = CreationCases.NoOverlapBefore.toSlotCreationReq(existingSlot)
+        val slotCreationReq = CreationCases.NoOverlapBefore.toSlotCreationReq(existingSlot, listOf(hall.id))
 
         every { slotRepo.getByHallIdAndEventId(hall.id, eventId) } returns existingSlots
 
-        every { hallRepo.findById(hall.id) } returns when(case) {
-            HallCases.NotFound -> { Optional.empty() }
+        every { hallRepo.getAllByAvailableEventId(eventId) } returns when(case) {
+            HallCases.NotFound -> { emptyList() }
             HallCases.FoundNoTrackId -> {
                 hall = hall.copy(trackId = null)
-                Optional.of(hall)
+                listOf(hall)
             }
             HallCases.FoundAndTrackId -> {
-                Optional.of(hall)
+                listOf(hall)
             }
         }
 
@@ -135,7 +138,7 @@ class SlotAdapterTest {
 
         when(case) {
             HallCases.FoundAndTrackId -> {
-                assertEquals(returnedSlot.toSlot(), slotAdapter.create(hall.id, eventId, slotCreationReq))
+                assertEquals(returnedSlot.toSlot(), slotAdapter.create(eventId, slotCreationReq))
                 verify { slotRepo.create(
                     hall.id,
                     eventId,
@@ -147,7 +150,7 @@ class SlotAdapterTest {
                 verify { slotRepo.getByBarcodeAndEventId(barcode, eventId) }
             }
             else -> {
-                assertThrows<HallNotFoundException> { slotAdapter.create(hall.id, eventId, slotCreationReq) }
+                assertThrows<HallNotFoundException> { slotAdapter.create(eventId, slotCreationReq) }
                 verify(exactly = 0) { slotRepo.create(
                     hall.id,
                     eventId,
@@ -160,7 +163,7 @@ class SlotAdapterTest {
             }
         }
         verify { slotRepo.getByHallIdAndEventId(hall.id, eventId) }
-        verify { hallRepo.findById(hall.id) }
+        verify { hallRepo.getAllByAvailableEventId(eventId) }
     }
 
     @ParameterizedTest
@@ -257,45 +260,45 @@ class SlotAdapterTest {
         }
     }
 
-    private fun CreationCases.toSlotCreationReq(slot: SlotDB): SlotCreationReq =
+    private fun CreationCases.toSlotCreationReq(slot: SlotDB, hallIds: List<Int>): SlotCreationReq =
         when (this) {
             CreationCases.NoOverlapBefore -> {
                 val start = slot.start - Duration.ofMinutes(Random.nextLong(10, 20))
                 val duration = Duration.ofMinutes(Random.nextLong(0, 10))
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
             CreationCases.NoOverlapAfter -> {
                 val start = slot.start + slot.duration + Duration.ofMinutes(Random.nextLong(10, 20))
                 val duration = Duration.ofMinutes(Random.nextLong(10, 20))
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
             CreationCases.OverlapBefore -> {
                 val timeBeforeOther = Duration.ofMinutes(Random.nextLong(10, 20))
                 val start = slot.start - timeBeforeOther
                 val duration = timeBeforeOther + slot.duration.dividedBy(2)
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
             CreationCases.OverlapAfter -> {
                 val start = slot.start + slot.duration.dividedBy(2)
                 val duration = slot.duration.dividedBy(2) + Duration.ofMinutes(Random.nextLong(10, 20))
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
             CreationCases.OverlapIn -> {
                 val start = slot.start + slot.duration.dividedBy(4)
                 val duration = slot.duration.dividedBy(2)
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
             CreationCases.OverlapOut -> {
                 val timeBeforeOther = Duration.ofMinutes(Random.nextLong(10, 20))
                 val start = slot.start - timeBeforeOther
                 val duration = slot.duration.plus(timeBeforeOther.multipliedBy(2))
 
-                SlotCreationReq(start, slot.day, duration)
+                SlotCreationReq(start, slot.day, duration, hallIds)
             }
         }
 

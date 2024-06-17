@@ -33,9 +33,9 @@ class SlotAdapter (
         val halls = hallRepo.getAllByAvailableEventId(eventId)
             .filter { it.id in req.hallIds }
 
-        val hall = halls.first()
+        val hall = halls.firstOrNull()
         val barcode: String?
-        if (hall.trackId != null) {
+        if (hall?.trackId != null) {
             barcode = computeBarcode(
                 req.day,
                 eventId,
@@ -45,7 +45,7 @@ class SlotAdapter (
                 req.start
             )
         } else {
-            throw HallNotFoundException("Hall with id ${hall.id} does not have a trackId assigned")
+            throw HallNotFoundException("Hall not found or does not have a trackId assigned")
         }
 
         slotRepo.create(hall.id, eventId, req.day, req.start, req.duration.seconds, barcode)

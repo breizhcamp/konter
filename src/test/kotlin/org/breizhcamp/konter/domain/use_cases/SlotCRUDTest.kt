@@ -45,13 +45,13 @@ class SlotCRUDTest {
         fun `create should call Port with its inputs and return the result`() {
             val hallId = Random.nextInt().absoluteValue
             val eventId = Random.nextInt().absoluteValue
-            val req = SlotCreationReq(slot.start, slot.day, slot.duration)
+            val req = SlotCreationReq(slot.start, slot.day, slot.duration, listOf(hallId))
 
-            every { slotPort.create(hallId, eventId, req) } returns slot
+            every { slotPort.create(eventId, req) } returns slot
 
-            assertEquals(slot, slotCRUD.create(hallId, eventId, req))
+            assertEquals(slot, slotCRUD.create(eventId, req))
 
-            verify { slotPort.create(hallId, eventId, req) }
+            verify { slotPort.create(eventId, req) }
         }
 
         @Test
