@@ -19,9 +19,9 @@ class GetTalks(
         if (event.begin == null) {
             eventPort.save(kalonPort.getEvents())
             event = eventPort.getById(eventId)
-        }
-        if (event.begin == null) {
-            throw EventNoBeginException("No beginning date found for Event:$eventId")
+            if (event.begin == null) {
+                throw EventNoBeginException("No beginning date found for Event:$eventId")
+            }
         }
         return eventPort.exportTalks(eventId)
     }
