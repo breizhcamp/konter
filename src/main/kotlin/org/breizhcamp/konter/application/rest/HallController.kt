@@ -5,9 +5,12 @@ import org.breizhcamp.konter.application.dto.HallDTO
 import org.breizhcamp.konter.application.requests.HallCreationReq
 import org.breizhcamp.konter.application.requests.HallPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
+import org.breizhcamp.konter.domain.entities.exceptions.EventNotFoundException
 import org.breizhcamp.konter.domain.use_cases.HallAssociateEvent
 import org.breizhcamp.konter.domain.use_cases.HallCRUD
 import org.breizhcamp.konter.domain.use_cases.HallSetOrder
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 private val logger = KotlinLogging.logger {  }
@@ -55,11 +58,17 @@ class HallController (
         return hallCRUD.delete(id)
     }
 
-    @PostMapping("/{id}/event/{eventId}")
-    fun associateToEvent(@PathVariable id: Int, @PathVariable eventId: Int): HallDTO {
+    @PostMapping("/{id}/event/{eventId}/{order}")
+    fun associateToEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int): ResponseEntity<*> {
         logger.info { "Associating Hall:$id to Event:$eventId" }
 
-        return hallAssociateEvent.associate(id, eventId).toDto()
+        return try {
+            ResponseEntity.ok(hallAssociateEvent.associate(id, eventId, order).toDto())
+        } catch (e: EventNotFoundException) {
+            logger.error { e }
+
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.message)
+        }
     }
 
     @DeleteMapping("/{id}/event/{eventId}")
@@ -70,7 +79,7 @@ class HallController (
     }
 
     @PatchMapping("/{id}/event/{eventId}/{order}")
-    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int?): HallDTO {
+    fun updateOrderForEvent(@PathVariable id: Int, @PathVariable eventId: Int, @PathVariable order: Int): HallDTO {
         logger.info { "Updating order of Hall:$id for Event:$eventId to $order" }
 
         return hallSetOrder.setOrder(id, eventId, order).toDto()

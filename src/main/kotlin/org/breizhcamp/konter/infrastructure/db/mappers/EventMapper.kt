@@ -6,7 +6,9 @@ import org.breizhcamp.konter.infrastructure.db.model.EventDB
 fun EventDB.toEvent() = Event(
     id = id,
     year = year,
-    name = name
+    name = name,
+    begin = begin,
+    end = end
 )
 
 fun Event.toDB() = EventDB(
@@ -14,4 +16,6 @@ fun Event.toDB() = EventDB(
     year = year,
     name = name,
     halls = emptySet(),
+    begin = begin,
+    end = end
 )

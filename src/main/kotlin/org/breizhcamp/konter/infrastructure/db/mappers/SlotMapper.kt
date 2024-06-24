@@ -14,7 +14,8 @@ fun SlotDB.toSlot(): Slot = Slot(
     event = event.toEvent(),
     barcode = barcode,
     span = 1,
-    title = title
+    title = title,
+    assignable = assignable
 )
 
 fun SlotDB.toLimitedSlot(): Slot = Slot(
@@ -28,7 +29,8 @@ fun SlotDB.toLimitedSlot(): Slot = Slot(
     event = event.toEvent(),
     barcode = barcode,
     span = 1,
-    title = title
+    title = title,
+    assignable = assignable
 )
 
 fun Slot.toDB(): SlotDB = SlotDB(
@@ -41,5 +43,6 @@ fun Slot.toDB(): SlotDB = SlotDB(
     start = start,
     duration = duration,
     barcode = barcode,
-    title = title
+    title = title,
+    assignable = assignable
 )

@@ -3,15 +3,17 @@ package org.breizhcamp.konter.application.rest
 import jakarta.servlet.http.HttpServletResponse
 import mu.KotlinLogging
 import org.breizhcamp.konter.application.dto.SlotDTO
+import org.breizhcamp.konter.application.dto.TalkDTO
 import org.breizhcamp.konter.application.requests.SlotCreationReq
+import org.breizhcamp.konter.application.requests.SlotPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.entities.Slot
+import org.breizhcamp.konter.domain.entities.Talk
+import org.breizhcamp.konter.domain.entities.enums.getLabel
+import org.breizhcamp.konter.domain.entities.exceptions.EventNoBeginException
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
 import org.breizhcamp.konter.domain.entities.exceptions.TimeConflictException
-import org.breizhcamp.konter.domain.use_cases.EventGet
-import org.breizhcamp.konter.domain.use_cases.SlotAssociateHall
-import org.breizhcamp.konter.domain.use_cases.SlotCRUD
-import org.breizhcamp.konter.domain.use_cases.SlotGenerateProgram
+import org.breizhcamp.konter.domain.use_cases.*
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -27,7 +29,8 @@ class SlotController (
     private val slotCrud: SlotCRUD,
     private val eventGet: EventGet,
     private val slotGenerateProgram: SlotGenerateProgram,
-    private val slotAssociateHall: SlotAssociateHall
+    private val slotAssociateHall: SlotAssociateHall,
+    private val getTalks: GetTalks
 ) {
 
     @GetMapping("/event/{id}")
@@ -88,6 +91,13 @@ class SlotController (
         slotCrud.delete(id)
     }
 
+    @PatchMapping("/{id}")
+    fun update(@PathVariable id: UUID, @RequestBody request: SlotPatchReq): SlotDTO {
+        logger.info { "Patching Slot:$id" }
+
+        return slotCrud.update(id, request).toDto()
+    }
+
     @GetMapping("/program/{eventId}")
     fun exportProgram(@PathVariable eventId: Int, output: HttpServletResponse) {
         logger.info { "Generating program for Event:$eventId" }
@@ -120,10 +130,22 @@ class SlotController (
     }
 
     @DeleteMapping("/hall/{slotId}/{hallId}")
-    fun resignHallFromSlot(@PathVariable slotId: UUID, @PathVariable hallId: Int): SlotDTO {
+    fun resignHallFromSlot(@PathVariable slotId: UUID, @PathVariable hallId: Int) {
         logger.info { "Resigning Hall:$hallId from Slot:$slotId" }
 
-        return slotAssociateHall.dissociate(slotId, hallId).toDto()
+        slotAssociateHall.dissociate(slotId, hallId)
+    }
+
+    @GetMapping("/talks/{eventId}")
+    fun listTalks(@PathVariable eventId: Int): ResponseEntity<*> {
+        logger.info { "Retrieving Talks from Event:$eventId" }
+
+        return try {
+            ResponseEntity.ok(getTalks.list(eventId).map { it.toDto() })
+        } catch (e: EventNoBeginException) {
+            logger.error { e }
+            ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.message)
+        }
     }
 }
 
@@ -136,5 +158,24 @@ fun Slot.toDto(): SlotDTO = SlotDTO(
     duration = duration,
     barcode = barcode,
     span = span,
-    title = title
+    title = title,
+    assignable = assignable
 )
+
+fun Talk.toDto(): TalkDTO {
+    return TalkDTO(
+        id = id,
+        name = name,
+        eventStart = eventStart,
+        eventEnd = eventEnd,
+        eventType = eventType.getLabel(),
+        format = format.getLabel(),
+        venue = requireNotNull(hall.name) { "Name not found for Hall:${hall.id}" },
+        venueId = requireNotNull(hall.trackId) { "Track ID not found for Hall:${hall.id}" },
+        speakers = speakers.joinToString(", ") { "${it.firstname} ${it.lastname}" },
+        videoUrl = videoUrl,
+        filesUrl = filesUrl,
+        slidesUrl = slidesUrl,
+        description = description
+    )
+}

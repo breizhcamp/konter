@@ -11,6 +11,6 @@ class SlotAssociateHall (
 ) {
 
     fun associate(id: UUID, eventId: Int, hallId: Int): Slot = slotPort.associateHall(id, eventId, hallId)
-    fun dissociate(id: UUID, hallId: Int): Slot = slotPort.dissociateHall(id, hallId)
+    fun dissociate(id: UUID, hallId: Int) = slotPort.dissociateHall(id, hallId)
 
 }

@@ -10,5 +10,7 @@ data class SlotCreationReq(
     val day: Int,
     @JdbcTypeCode(SqlTypes.INTERVAL_SECOND)
     val duration: Duration,
-    val hallIds: List<Int>
+    val title: String?,
+    val hallIds: List<Int>,
+    val assignable: Boolean
 )

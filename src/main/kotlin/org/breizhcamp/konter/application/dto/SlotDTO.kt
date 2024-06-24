@@ -13,5 +13,6 @@ data class SlotDTO(
     val duration: Duration,
     val barcode: String?,
     val span: Int,
-    val title: String?
+    val title: String?,
+    val assignable: Boolean
 )

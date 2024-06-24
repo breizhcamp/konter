@@ -13,6 +13,9 @@ import org.springframework.stereotype.Component
 class HallAdapter (
     private val hallRepo: HallRepo
 ) : HallPort{
+    override fun get(id: Int): Hall =
+        hallRepo.findById(id).get().toHall()
+
     override fun list(eventId: Int?): List<Hall> {
         eventId?.let {
             return hallRepo.getAllByAvailableEventId(eventId)
@@ -31,19 +34,21 @@ class HallAdapter (
     }
 
     @Transactional
-    override fun associateToEvent(id: Int, eventId: Int): Hall {
-        hallRepo.associateToEvent(id, eventId)
+    override fun associateToEvent(id: Int, eventId: Int, order: Int): Hall {
+        hallRepo.associateToEvent(id, eventId, order)
         return hallRepo.findById(id).get().toHall()
     }
 
     @Transactional
     override fun dissociateFromEvent(id: Int, eventId: Int): Hall {
+        val hallsAfter = hallRepo.getAllByOrderAfterHallInEvent(eventId, id)
         hallRepo.dissociateFromEvent(id, eventId)
+        hallsAfter.forEach { hallRepo.decreaseOrder(it.id, eventId) }
         return hallRepo.findById(id).get().toHall()
     }
 
     @Transactional
-    override fun setOrderInEvent(id: Int, eventId: Int, order: Int?): Hall {
+    override fun setOrderInEvent(id: Int, eventId: Int, order: Int): Hall {
         hallRepo.setOrderInEvent(id, eventId, order)
         return hallRepo.findById(id).get().toHall()
     }

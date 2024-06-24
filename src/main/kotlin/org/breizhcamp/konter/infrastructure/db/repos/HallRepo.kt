@@ -25,25 +25,28 @@ interface HallRepo: JpaRepository<HallDB, Int> {
         WHERE id IN (
             SELECT hall_id FROM available WHERE event_id = ?1
         )
-        ORDER BY (
-            -- Order by the ORDER column only if all halls available for the event have an order set, defaults to trackId
-            CASE WHEN (
-                SELECT count(*) FROM available WHERE event_id = ?1 AND "order" IS NOT NULL
-            ) = (
-                SELECT count(*) FROM available WHERE event_id = ?1
-            ) 
-                THEN (SELECT "order" FROM available WHERE event_id = ?1 AND hall_id = id) 
-                ELSE track_id 
-            END
-        )
+        ORDER BY (SELECT "order" FROM available WHERE event_id = ?1 AND hall_id = id)
     """, nativeQuery = true)
     fun getAllByAvailableEventId(eventId: Int): List<HallDB>
 
+    @Query("""
+        SELECT h.* FROM hall h JOIN available a ON h.id = a.hall_id WHERE a.event_id = ?1 AND "order" > (
+            SELECT "order" FROM available av WHERE av.hall_id = ?2 AND av.event_id = ?1
+        )
+    """, nativeQuery = true)
+    fun getAllByOrderAfterHallInEvent(eventId: Int, hallId: Int): List<HallDB>
+
     @Modifying
     @Query("""
-        INSERT INTO available(hall_id, event_id) VALUES (?, ?)
+        UPDATE available SET "order" = "order" - 1 WHERE hall_id = ?1 AND event_id = ?2
     """, nativeQuery = true)
-    fun associateToEvent(id: Int, eventId: Int)
+    fun decreaseOrder(id: Int, eventId: Int)
+
+    @Modifying
+    @Query("""
+        INSERT INTO available(hall_id, event_id, "order") VALUES (?, ?, ?)
+    """, nativeQuery = true)
+    fun associateToEvent(id: Int, eventId: Int, order: Int)
 
     @Modifying
     @Query("""
@@ -55,6 +58,6 @@ interface HallRepo: JpaRepository<HallDB, Int> {
     @Query("""
         UPDATE available SET "order" = ?3 WHERE hall_id = ?1 AND event_id = ?2
     """, nativeQuery = true)
-    fun setOrderInEvent(id: Int, eventId: Int, order: Int?)
+    fun setOrderInEvent(id: Int, eventId: Int, order: Int)
 
 }

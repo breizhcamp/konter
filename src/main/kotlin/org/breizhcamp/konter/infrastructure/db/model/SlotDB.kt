@@ -38,13 +38,15 @@ data class SlotDB(
     @JdbcTypeCode(SqlTypes.INTERVAL_SECOND)
     val duration: Duration,
     val barcode: String?,
-    val title: String?
+    val title: String?,
+    val assignable: Boolean
 ) {
     override fun hashCode(): Int {
         var hash = 0
 
         for (item in this.javaClass.fields.filter {
-            it.name != "session" && it.name != "manualSession"
+            it.name != SlotDB::session::name.toString() &&
+                    it.name != SlotDB::manualSession::name.toString()
         }) {
             hash += item.hashCode()
             hash *= 32

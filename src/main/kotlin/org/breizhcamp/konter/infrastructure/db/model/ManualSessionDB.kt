@@ -16,4 +16,11 @@ data class ManualSessionDB(
     val event: EventDB,
     val format: SessionFormatEnum,
     val theme: SessionThemeEnum,
+    @ManyToMany
+    @JoinTable(
+        name = "manual_presents",
+        joinColumns = [JoinColumn(name = "manual_session_id")],
+        inverseJoinColumns = [JoinColumn(name = "speaker_id")]
+    )
+    val speakers: Set<SpeakerDB>
 )

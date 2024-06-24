@@ -3,6 +3,7 @@ package org.breizhcamp.konter.infrastructure.db
 import com.itextpdf.barcodes.BarcodeEAN
 import jakarta.transaction.Transactional
 import org.breizhcamp.konter.application.requests.SlotCreationReq
+import org.breizhcamp.konter.application.requests.SlotPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.entities.Slot
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
@@ -48,7 +49,7 @@ class SlotAdapter (
             throw HallNotFoundException("Hall not found or does not have a trackId assigned")
         }
 
-        slotRepo.create(hall.id, eventId, req.day, req.start, req.duration.seconds, barcode)
+        slotRepo.create(hall.id, eventId, req.day, req.start, req.duration.seconds, barcode, req.title, req.assignable)
         val slotId = slotRepo.getByBarcodeAndEventId(barcode, eventId).id
 
         halls.filter { it != hall }.map { it.id }.forEach { hallId ->
@@ -59,7 +60,7 @@ class SlotAdapter (
     }
 
     @Throws
-    fun throwIfOverlapped(hallId: Int, eventId: Int, req: SlotCreationReq) {
+    fun throwIfOverlapped(hallId: Int, eventId: Int, req: SlotCreationReq, thisSlot: SlotDB? = null) {
         val start = req.start
         val end = req.start.plus(req.duration)
         val day = req.day
@@ -67,6 +68,8 @@ class SlotAdapter (
         val existingSlots: MutableList<SlotDB> =
             slotRepo.getByHallIdAndEventId(hallId, eventId)
                 .toMutableList()
+
+        thisSlot?.let { existingSlots.removeIf { slot -> slot.id == it.id } }
 
         val overlappingSlot = existingSlots.filter {
             it.day == day
@@ -145,22 +148,44 @@ class SlotAdapter (
         return dayMap
     }
 
+    override fun update(id: UUID, request: SlotPatchReq): Slot {
+        val oldSlot = slotRepo.findById(id).get()
+        var newSlot = oldSlot.copy()
+
+        request.title?.let { newSlot = newSlot.copy(title = it) }
+        newSlot = newSlot.copy(assignable = request.assignable)
+
+        return slotRepo.save(newSlot).toSlot()
+    }
+
     @Transactional
     override fun remove(id: UUID) =
         slotRepo.deleteById(id)
 
     @Transactional
     override fun associateHall(id: UUID, eventId: Int, hallId: Int): Slot {
+        val slot = slotRepo.findById(id).get()
+        val req = SlotCreationReq(
+            start = slot.start,
+            day = slot.day,
+            duration = slot.duration,
+            title = slot.title,
+            hallIds = slot.halls.map { it.id },
+            assignable = slot.assignable
+        )
+        throwIfOverlapped(hallId, eventId, req, slot)
         slotRepo.associateToHallAndEvent(id, hallId, eventId)
 
         return getById(id)
     }
 
     @Transactional
-    override fun dissociateHall(id: UUID, hallId: Int): Slot {
-        slotRepo.dissocateFromHall(id, hallId)
-
-        return getById(id)
+    override fun dissociateHall(id: UUID, hallId: Int) {
+        slotRepo.dissociateFromHall(id, hallId)
+        val slot = slotRepo.findById(id).get()
+        if (slot.halls.isEmpty()) {
+            slotRepo.deleteById(id)
+        }
     }
 
     private fun SlotDB.toSpanSlot(availableHalls: List<HallDB>, hall: HallDB): Slot {
@@ -185,7 +210,8 @@ class SlotAdapter (
             start = start,
             barcode = barcode,
             duration = duration,
-            span = span
+            span = span,
+            assignable = assignable
         )
     }
 }

@@ -9,6 +9,6 @@ class HallSetOrder(
     private val hallPort: HallPort
 ) {
 
-    fun setOrder(id: Int, eventId: Int, order: Int?): Hall = hallPort.setOrderInEvent(id, eventId, order)
+    fun setOrder(id: Int, eventId: Int, order: Int): Hall = hallPort.setOrderInEvent(id, eventId, order)
 
 }

@@ -247,11 +247,11 @@ class SlotAdapterTest {
 
         @Test
         fun `dissociateHall should call repo and return the slot`() {
-            every { slotRepo.dissocateFromHall(slot.id, hallId) } just Runs
+            every { slotRepo.dissociateFromHall(slot.id, hallId) } just Runs
 
             assertEquals(slot.toSlot(), slotAdapter.dissociateHall(slot.id, hallId))
 
-            verify { slotRepo.dissocateFromHall(slot.id, hallId) }
+            verify { slotRepo.dissociateFromHall(slot.id, hallId) }
         }
 
         @AfterEach

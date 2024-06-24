@@ -75,5 +75,6 @@ fun ManualSession.toDB() = ManualSessionDB(
     description = description,
     event = event.toDB(),
     format = format,
-    theme = theme
+    theme = theme,
+    speakers = emptySet()
 )

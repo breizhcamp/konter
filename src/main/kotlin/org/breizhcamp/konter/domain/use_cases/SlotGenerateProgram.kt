@@ -37,8 +37,8 @@ class SlotGenerateProgram (
         val font = PdfFontFactory.createFont(StandardFonts.HELVETICA)
         val bold = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD)
 
-        val titleSize = 40f
-        val textSize = 18f
+        val titleSize = 30f
+        val textSize = 13f
 
         val segmentMinutes = 15L
 
@@ -140,19 +140,30 @@ class SlotGenerateProgram (
 
                                 val cellTitle = Paragraph().apply {
                                     setTextAlignment(TextAlignment.CENTER)
+                                    setMarginBottom(10f)
                                     add(formatTime(slot.start))
                                     add(" - ")
                                     add(formatTime(slot.start.plus(slot.duration)))
-                                }
-                                val cellBarcode = BarcodeEAN(pdfDoc).apply {
-                                    codeType = BarcodeEAN.EAN13
-                                    code = slot.barcode
+                                    slot.title?.let {
+                                        add(" : ")
+                                        add(it)
+                                    }
                                 }
                                 cell.apply {
                                     setHorizontalAlignment(HorizontalAlignment.CENTER)
                                     setVerticalAlignment(VerticalAlignment.MIDDLE)
                                     add(cellTitle)
-                                    add(Image(cellBarcode.createFormXObject(pdfDoc)).setHorizontalAlignment(HorizontalAlignment.CENTER))
+                                    if (slot.assignable) {
+                                        val cellBarcode = BarcodeEAN(pdfDoc).apply {
+                                            codeType = BarcodeEAN.EAN13
+                                            code = slot.barcode
+                                        }
+                                        add(
+                                            Image(cellBarcode.createFormXObject(pdfDoc)).setHorizontalAlignment(
+                                                HorizontalAlignment.CENTER
+                                            )
+                                        )
+                                    }
                                 }
                                 table.addCell(cell)
                             }

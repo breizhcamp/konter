@@ -12,14 +12,14 @@ interface SlotRepo: JpaRepository<SlotDB, UUID> {
     @Modifying
     @Query("""
         WITH s_id as (
-            INSERT INTO slot(day, start, duration, barcode, id)
-            VALUES (?3, CAST(?4 AS TIME), ?5 * INTERVAL '1 second', ?6, gen_random_uuid())
+            INSERT INTO slot(day, start, duration, barcode, title, assignable, id)
+            VALUES (?3, CAST(?4 AS TIME), ?5 * INTERVAL '1 second', ?6, ?7, ?8, gen_random_uuid())
             RETURNING id
         )
         INSERT INTO held(hall_id, event_id, slot_id) 
         SELECT ?1, ?2, s_id.id FROM s_id
     """, nativeQuery = true)
-    fun create(hallId: Int, eventId: Int, day: Int, start: LocalTime, duration: Long, barcode: String?)
+    fun create(hallId: Int, eventId: Int, day: Int, start: LocalTime, duration: Long, barcode: String?, title: String?, assignable: Boolean)
 
     fun getAllByEventId(eventId: Int): List<SlotDB>
 
@@ -34,7 +34,7 @@ interface SlotRepo: JpaRepository<SlotDB, UUID> {
 
     @Modifying
     @Query("""
-        INSERT INTO held(slot_id, hall_id, event_id) VALUES (?1, ?2, ?3)
+        INSERT INTO held(slot_id, hall_id, event_id) VALUES (?1, ?2, ?3) ON CONFLICT DO NOTHING 
     """, nativeQuery = true)
     fun associateToHallAndEvent(slotId: UUID, hallId: Int, eventId: Int)
 
@@ -42,5 +42,5 @@ interface SlotRepo: JpaRepository<SlotDB, UUID> {
     @Query("""
         DELETE FROM held WHERE slot_id = ?1 and hall_id = ?2
     """, nativeQuery = true)
-    fun dissocateFromHall(slotId: UUID, hallId: Int)
+    fun dissociateFromHall(slotId: UUID, hallId: Int)
 }
