@@ -1,7 +1,9 @@
 package org.breizhcamp.konter.domain.use_cases
 
 import com.ninjasquad.springmockk.MockkBean
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.verify
 import org.breizhcamp.konter.domain.entities.Slot
 import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
@@ -48,9 +50,9 @@ class SlotAssociateHallTest {
 
     @Test
     fun dissociate() {
-        every { slotPort.dissociateHall(slot.id, hallId) } returns slot
+        every { slotPort.dissociateHall(slot.id, hallId) } just Runs
 
-        assertEquals(slot, slotAssociateHall.dissociate(slot.id, hallId))
+        slotAssociateHall.dissociate(slot.id, hallId)
 
         verify { slotPort.dissociateHall(slot.id, hallId) }
     }

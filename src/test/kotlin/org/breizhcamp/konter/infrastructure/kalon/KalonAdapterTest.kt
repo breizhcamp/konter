@@ -66,7 +66,7 @@ class KalonAdapterTest {
             .withHeaders(
                 Header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF_8.toString())
             )
-            .withBody(ObjectMapper().writeValueAsString(events.map { it.id }))
+            .withBody(ObjectMapper().findAndRegisterModules().writeValueAsString(events.map { it.id }))
         )
 
         getIdsRequestDefinition = requestDefinition
@@ -85,7 +85,7 @@ class KalonAdapterTest {
                 .withHeaders(
                     Header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_UTF_8.toString())
                 )
-                .withBody(ObjectMapper().writeValueAsString(event))
+                .withBody(ObjectMapper().findAndRegisterModules().writeValueAsString(event))
             )
 
             requestDefinitions.add(reqDef)

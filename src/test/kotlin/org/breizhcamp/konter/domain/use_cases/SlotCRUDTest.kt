@@ -6,6 +6,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.verify
 import org.breizhcamp.konter.application.requests.SlotCreationReq
+import org.breizhcamp.konter.application.requests.SlotPatchReq
 import org.breizhcamp.konter.domain.entities.Slot
 import org.breizhcamp.konter.domain.use_cases.ports.SlotPort
 import org.breizhcamp.konter.testUtils.HallGen
@@ -33,7 +34,7 @@ class SlotCRUDTest {
     private lateinit var slotCRUD: SlotCRUD
 
     @Nested
-    inner class CRTests {
+    inner class CRUTests {
         private lateinit var slot: Slot
 
         @BeforeEach
@@ -45,7 +46,7 @@ class SlotCRUDTest {
         fun `create should call Port with its inputs and return the result`() {
             val hallId = Random.nextInt().absoluteValue
             val eventId = Random.nextInt().absoluteValue
-            val req = SlotCreationReq(slot.start, slot.day, slot.duration, listOf(hallId))
+            val req = SlotCreationReq(slot.start, slot.day, slot.duration, slot.title, listOf(hallId), slot.assignable)
 
             every { slotPort.create(eventId, req) } returns slot
 
@@ -61,6 +62,16 @@ class SlotCRUDTest {
             assertEquals(slot, slotCRUD.get(slot.id))
 
             verify { slotPort.getById(slot.id) }
+        }
+
+        @Test
+        fun `update should call Port with its inputs and return the result`() {
+            val req = SlotPatchReq(slot.title, slot.assignable)
+            every { slotPort.update(slot.id, req) } returns slot
+
+            assertEquals(slot, slotCRUD.update(slot.id, req))
+
+            verify { slotPort.update(slot.id, req) }
         }
     }
 

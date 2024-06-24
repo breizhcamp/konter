@@ -8,6 +8,7 @@ import io.mockk.verify
 import org.breizhcamp.konter.application.requests.HallCreationReq
 import org.breizhcamp.konter.application.requests.HallPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
+import org.breizhcamp.konter.domain.entities.exceptions.EventNotFoundException
 import org.breizhcamp.konter.domain.use_cases.HallAssociateEvent
 import org.breizhcamp.konter.domain.use_cases.HallCRUD
 import org.breizhcamp.konter.domain.use_cases.HallSetOrder
@@ -21,6 +22,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import kotlin.math.absoluteValue
 import kotlin.random.Random
@@ -129,21 +132,38 @@ class HallControllerTest {
     inner class EventRelativeTests {
         private var eventId: Int = 0
         private lateinit var hall: Hall
+        private var order: Int = 0
 
         @BeforeEach
         fun setUp() {
             eventId = Random.nextInt().absoluteValue
             hall = HallGen().generateOne()
+            order = Random.nextInt().absoluteValue
+        }
+
+        @Test
+        fun `associateToEvent should log, call AssociateEvent and return a 404 if Event was not found`(output: CapturedOutput) {
+            val exception = EventNotFoundException("No Event with id $eventId found")
+            every { hallAssociateEvent.associate(hall.id, eventId, order) } throws exception
+
+            assertEquals(
+                ResponseEntity.status(HttpStatus.NOT_FOUND).body(exception.message),
+                hallController.associateToEvent(hall.id, eventId, order)
+            )
+            assert(output.contains("Associating Hall:${hall.id} to Event:$eventId"))
+            assert(output.contains(exception.toString()))
+
+            verify { hallAssociateEvent.associate(hall.id, eventId, order) }
         }
 
         @Test
         fun `associateToEvent should log, call AssociateEvent with its inputs and return the result as a DTO`(output: CapturedOutput) {
-            every { hallAssociateEvent.associate(hall.id, eventId) } returns hall
+            every { hallAssociateEvent.associate(hall.id, eventId, order) } returns hall
 
-            assertEquals(hall.toDto(), hallController.associateToEvent(hall.id, eventId))
+            assertEquals(ResponseEntity.ok(hall.toDto()), hallController.associateToEvent(hall.id, eventId, order))
             assert(output.contains("Associating Hall:${hall.id} to Event:$eventId"))
 
-            verify { hallAssociateEvent.associate(hall.id, eventId) }
+            verify { hallAssociateEvent.associate(hall.id, eventId, order) }
         }
 
         @Test
@@ -158,7 +178,6 @@ class HallControllerTest {
 
         @Test
         fun `updateOrderForEvent should log, call SetOrderEvent with its inputs and return the result as a DTO`(output: CapturedOutput) {
-            val order = Random.nextInt().absoluteValue
             every { hallSetOrder.setOrder(hall.id, eventId, order) } returns hall
 
             assertEquals(hall.toDto(), hallController.updateOrderForEvent(hall.id, eventId, order))

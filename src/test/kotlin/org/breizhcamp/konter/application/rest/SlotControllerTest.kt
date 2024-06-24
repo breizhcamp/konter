@@ -6,18 +6,14 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.verify
 import org.breizhcamp.konter.application.requests.SlotCreationReq
+import org.breizhcamp.konter.application.requests.SlotPatchReq
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.entities.Slot
+import org.breizhcamp.konter.domain.entities.exceptions.EventNoBeginException
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
 import org.breizhcamp.konter.domain.entities.exceptions.TimeConflictException
-import org.breizhcamp.konter.domain.use_cases.EventGet
-import org.breizhcamp.konter.domain.use_cases.SlotAssociateHall
-import org.breizhcamp.konter.domain.use_cases.SlotCRUD
-import org.breizhcamp.konter.domain.use_cases.SlotGenerateProgram
-import org.breizhcamp.konter.testUtils.EventGen
-import org.breizhcamp.konter.testUtils.HallGen
-import org.breizhcamp.konter.testUtils.SlotGen
-import org.breizhcamp.konter.testUtils.generateRandomHexString
+import org.breizhcamp.konter.domain.use_cases.*
+import org.breizhcamp.konter.testUtils.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
@@ -55,6 +51,9 @@ class SlotControllerTest {
 
     @MockkBean
     private lateinit var slotAssociateHall: SlotAssociateHall
+
+    @MockkBean
+    private lateinit var getTalks: GetTalks
 
     @Autowired
     private lateinit var slotController: SlotController
@@ -106,7 +105,7 @@ class SlotControllerTest {
         fun `addSlotToHall should log, call CRUD return a CONFLICT on TimeConflictException, NOT_FOUND on HallNotFoundException and the result as a DTO on no Exception`(scenario: Scenarios, output: CapturedOutput) {
             val hallId = Random.nextInt().absoluteValue
             val eventId = Random.nextInt().absoluteValue
-            val request = SlotCreationReq(slot.start, slot.day, slot.duration, listOf(hallId))
+            val request = SlotCreationReq(slot.start, slot.day, slot.duration, slot.title, listOf(hallId), slot.assignable)
 
             val message = generateRandomHexString()
 
@@ -147,6 +146,18 @@ class SlotControllerTest {
             verify { slotCrud.get(slot.id) }
         }
 
+        @Test
+        fun `update should log, call crud and return the result as a DTO`(output: CapturedOutput) {
+            val req = SlotPatchReq(generateRandomHexString(), Random.nextBoolean())
+            val updatedSlot = slot.copy(title = req.title, assignable = req.assignable)
+            every { slotCrud.update(slot.id, req) } returns updatedSlot
+
+            assertEquals(updatedSlot.toDto(), slotController.update(slot.id, req))
+            assert(output.contains("Patching Slot:${slot.id}"))
+
+            verify { slotCrud.update(slot.id, req) }
+        }
+
         @Nested
         inner class  HallAssignmentTests {
             private var eventId: Int = 0
@@ -156,6 +167,23 @@ class SlotControllerTest {
             fun setUp() {
                 eventId = Random.nextInt().absoluteValue
                 hallId = Random.nextInt().absoluteValue
+            }
+
+            @Test
+            fun `assignHallToSlot should log, call AssociateHall and return a 409 if a time conflict was found`(
+                output: CapturedOutput
+            ) {
+                val exception = TimeConflictException("Slot overlaps with an existing slot")
+                every { slotAssociateHall.associate(slot.id, eventId, hallId) } throws exception
+
+                assertEquals(
+                    ResponseEntity.status(HttpStatus.CONFLICT).body(exception.message),
+                    slotController.assignHallToSlot(slot.id, eventId, hallId)
+                )
+                assert(output.contains("Assigning Hall:$hallId to Slot:${slot.id} in Event:$eventId"))
+                assert(output.contains(exception.toString()))
+
+                verify { slotAssociateHall.associate(slot.id, eventId, hallId) }
             }
 
             @Test
@@ -173,9 +201,9 @@ class SlotControllerTest {
 
             @Test
             fun `resignHallFromSlot should log, call AssociateHall and return the result as a DTO`(output: CapturedOutput) {
-                every { slotAssociateHall.dissociate(slot.id, hallId) } returns slot
+                every { slotAssociateHall.dissociate(slot.id, hallId) } just Runs
 
-                assertEquals(slot.toDto(), slotController.resignHallFromSlot(slot.id, hallId))
+                slotController.resignHallFromSlot(slot.id, hallId)
                 assert(output.contains("Resigning Hall:$hallId from Slot:${slot.id}"))
 
                 verify { slotAssociateHall.dissociate(slot.id, hallId) }
@@ -211,5 +239,46 @@ class SlotControllerTest {
 
         verify { eventGet.getById(event.id) }
         verify { slotGenerateProgram.generateEmptyProgramPdf(event.id, response.outputStream) }
+    }
+
+    @Nested
+    inner class TalksTests {
+        private var eventId = 0
+
+        @BeforeEach
+        fun setUp() {
+            eventId = Random.nextInt().absoluteValue
+        }
+
+        @Test
+        fun `listTalks should log, call getTalks and return a 404 if the event has no begin date`(
+            output: CapturedOutput
+        ) {
+            val exception = EventNoBeginException("No beginning date found for Event:$eventId")
+            every { getTalks.list(eventId) } throws exception
+
+            assertEquals(
+                ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(exception.message),
+                slotController.listTalks(eventId)
+            )
+            assert(output.contains("Retrieving Talks from Event:$eventId"))
+            assert(output.contains(exception.toString()))
+
+            verify { getTalks.list(eventId) }
+        }
+
+        @Test
+        fun `listTalks should log, call getTalks and return the result as a list of DTOs`(
+            output: CapturedOutput
+        ) {
+            val talks = TalkGen().generateList()
+            every { getTalks.list(eventId) } returns talks
+
+            assertEquals(ResponseEntity.ok(talks.map { it.toDto() }), slotController.listTalks(eventId))
+            assert(output.contains("Retrieving Talks from Event:$eventId"))
+
+            verify { getTalks.list(eventId) }
+        }
     }
 }

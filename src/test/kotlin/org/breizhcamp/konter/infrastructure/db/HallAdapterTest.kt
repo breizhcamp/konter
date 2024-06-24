@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import org.junit.jupiter.params.provider.ValueSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -133,28 +132,30 @@ class HallAdapterTest {
         @Test
         fun `associateToEvent should call repo and return the result as a Hall`() {
             val eventId = Random.nextInt().absoluteValue
-            every { hallRepo.associateToEvent(hall.id, eventId) } just Runs
+            val order = Random.nextInt().absoluteValue
+            every { hallRepo.associateToEvent(hall.id, eventId, order) } just Runs
 
-            assertEquals(hall.toHall(), hallAdapter.associateToEvent(hall.id, eventId))
+            assertEquals(hall.toHall(), hallAdapter.associateToEvent(hall.id, eventId, order))
 
-            verify { hallRepo.associateToEvent(hall.id, eventId) }
+            verify { hallRepo.associateToEvent(hall.id, eventId, order) }
         }
 
         @Test
         fun `dissociateFromEvent should call repo and return the result as a Hall`() {
             val eventId = Random.nextInt().absoluteValue
             every { hallRepo.dissociateFromEvent(hall.id, eventId) } just Runs
+            every { hallRepo.getAllByOrderAfterHallInEvent(eventId, hall.id) } returns emptyList()
 
             assertEquals(hall.toHall(), hallAdapter.dissociateFromEvent(hall.id, eventId))
 
             verify { hallRepo.dissociateFromEvent(hall.id, eventId) }
+            verify { hallRepo.getAllByOrderAfterHallInEvent(eventId, hall.id) }
         }
 
-        @ParameterizedTest
-        @ValueSource(booleans = [false, true])
-        fun `setOrderInEvent should call repo and return the result as a Hall`(orderNotNull: Boolean) {
+        @Test
+        fun `setOrderInEvent should call repo and return the result as a Hall`() {
             val eventId = Random.nextInt().absoluteValue
-            val order = if (orderNotNull) Random.nextInt().absoluteValue else null
+            val order = Random.nextInt().absoluteValue
             every { hallRepo.setOrderInEvent(hall.id, eventId, order) } just Runs
 
             assertEquals(hall.toHall(), hallAdapter.setOrderInEvent(hall.id, eventId, order))

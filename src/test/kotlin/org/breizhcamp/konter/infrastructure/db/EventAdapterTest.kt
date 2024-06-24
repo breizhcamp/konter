@@ -7,6 +7,7 @@ import io.mockk.verify
 import org.breizhcamp.konter.infrastructure.db.mappers.toEvent
 import org.breizhcamp.konter.infrastructure.db.model.EventDB
 import org.breizhcamp.konter.infrastructure.db.repos.EventRepo
+import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
 import org.breizhcamp.konter.testUtils.EventDBGen
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -29,6 +30,9 @@ class EventAdapterTest {
 
     @MockkBean
     private lateinit var eventRepo: EventRepo
+
+    @MockkBean
+    private lateinit var hallRepo: HallRepo
 
     @Autowired
     private lateinit var eventAdapter: EventAdapter
@@ -59,7 +63,8 @@ class EventAdapterTest {
             exists: Boolean
         ) {
             every { eventRepo.findById(event.id) } returns
-                    if (exists) Optional.of(event) else Optional.empty()
+                    if (exists) Optional.of(event)
+                    else Optional.empty()
 
             if (exists) {
                 assertEquals(event.toEvent(), eventAdapter.getById(event.id))
@@ -70,12 +75,17 @@ class EventAdapterTest {
             verify { eventRepo.findById(event.id) }
         }
 
-        @Test
-        fun `save should call repo`() {
+        @ParameterizedTest
+        @ValueSource(booleans = [false, true])
+        fun `save should call repo`(exists: Boolean) {
+            every { eventRepo.findById(event.id) } returns
+                    if (exists) Optional.of(event)
+                    else Optional.empty()
             every { eventRepo.save(event) } returns event
 
             eventAdapter.save(event.toEvent())
 
+            verify { eventRepo.findById(event.id) }
             verify { eventRepo.save(event) }
         }
     }
@@ -87,9 +97,11 @@ class EventAdapterTest {
         every { eventRepo.save(capture(eventDBSlot)) } answers {
             eventDBSlot.captured
         }
+        every { eventRepo.findById(any()) } returns Optional.empty()
 
         eventAdapter.save(events.map { it.toEvent() })
 
         verify(exactly = events.size) { eventRepo.save(any()) }
+        verify(exactly = events.size) { eventRepo.findById(any()) }
     }
 }

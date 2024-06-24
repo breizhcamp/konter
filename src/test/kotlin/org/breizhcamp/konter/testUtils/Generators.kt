@@ -87,7 +87,9 @@ class EventGen: Generator<Event> {
     override fun generateOne(): Event = Event(
         id = Random.nextInt().absoluteValue,
         year = Random.nextInt(2020, 2030),
-        name = generateRandomHexString()
+        name = generateRandomHexString(),
+        begin = generateRandomLocalDateTime().toLocalDate(),
+        end = generateRandomLocalDateTime().toLocalDate()
     )
 
 }
@@ -97,7 +99,9 @@ class EventDBGen: Generator<EventDB> {
         id = Random.nextInt().absoluteValue,
         year = Random.nextInt(2020, 2030),
         name = generateRandomHexString(),
-        halls = emptySet()
+        halls = emptySet(),
+        begin = generateRandomLocalDateTime().toLocalDate(),
+        end = generateRandomLocalDateTime().toLocalDate()
     )
 }
 
@@ -193,7 +197,8 @@ class ManualSessionDBGen: Generator<ManualSessionDB> {
             description = generateRandomHexString(),
             event = EventDBGen().generateOne(),
             format = format,
-            theme = theme
+            theme = theme,
+            speakers = SpeakerDBGen().generateList().toSet()
         )
     }
 }
@@ -210,7 +215,8 @@ class SlotGen: Generator<Slot> {
         duration = Duration.ofMinutes(Random.nextLong(15, 120)),
         barcode = generateRandomHexString(),
         span = Random.nextInt(1, 5),
-        title = generateRandomHexString()
+        title = generateRandomHexString(),
+        assignable = Random.nextBoolean()
     )
 }
 
@@ -225,6 +231,29 @@ class SlotDBGen: Generator<SlotDB> {
         start = generateRandomLocalDateTime().toLocalTime(),
         duration = Duration.ofMinutes(Random.nextLong(15, 120)),
         barcode = generateRandomHexString(),
-        title = generateRandomHexString()
+        title = generateRandomHexString(),
+        assignable = Random.nextBoolean()
     )
+}
+
+class TalkGen: Generator<Talk> {
+    override fun generateOne(): Talk {
+        val format = SessionFormatEnum.entries.random()
+        val theme  = SessionThemeEnum .entries.random()
+
+        return Talk(
+            id = Random.nextInt().absoluteValue,
+            name = generateRandomHexString(),
+            eventStart = generateRandomLocalDateTime(),
+            eventEnd = generateRandomLocalDateTime(),
+            eventType = theme,
+            format = format,
+            hall = HallGen().generateOne(),
+            speakers = SpeakerGen().generateList(),
+            videoUrl = null,
+            filesUrl = null,
+            slidesUrl = null,
+            description = generateRandomHexString()
+        )
+    }
 }
