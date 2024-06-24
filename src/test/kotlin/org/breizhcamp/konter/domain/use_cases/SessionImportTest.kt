@@ -1,7 +1,10 @@
 package org.breizhcamp.konter.domain.use_cases
 
 import com.ninjasquad.springmockk.MockkBean
-import io.mockk.*
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.verify
 import org.breizhcamp.konter.domain.entities.Evaluation
 import org.breizhcamp.konter.domain.entities.Event
 import org.breizhcamp.konter.domain.entities.Session
@@ -173,7 +176,7 @@ class SessionImportTest {
     fun `importCsv should call kalonPort to update the events if the event was not found, and continue if it was found in kalon`(
         output: CapturedOutput
     ) {
-        coEvery { eventPort.existsById(event.id) } returnsMany listOf(false, true)
+        every { eventPort.existsById(event.id) } returnsMany listOf(false, true)
         every { kalonPort.getEvents() } returns listOf(event)
         every { eventPort.save(listOf(event)) } just Runs
 
