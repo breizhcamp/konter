@@ -54,65 +54,66 @@ class EventAdapter (
             .plus(
                 sessionSlots
                     .asSequence()
-                    .map { it.toTalk(event, halls) }
+                    .map { it.toImportTalk(event, halls) }
             )
             .toList()
     }
 
-    private fun SlotDB.toManualTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
-        val session = requireNotNull(manualSession)
-        val halls = availableHalls.filter { it in halls }
-
-        if (halls.isEmpty()) {
-            throw HallNotFoundException("No Hall in Slot:${id} corresponds to an hall in Event:${event.id}")
-        }
-        val date = computeDate(event)
-
-        return Talk(
-            id = session.id,
-            name = session.title,
-            eventStart = start.atDate(date),
-            eventEnd = start.plus(duration).atDate(date),
-            eventType = session.theme,
-            format = session.format,
-            hall = halls.first().toHall(),
-            speakers = session.speakers.map { it.toSpeaker() },
-            videoUrl = null,
-            filesUrl = null,
-            slidesUrl = null,
-            description = session.description
-        )
-    }
-
-    private fun SlotDB.toTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
-        val session = requireNotNull(session)
-        val halls = availableHalls.filter { it in halls }
-
-        if (halls.isEmpty()) {
-            throw HallNotFoundException("No Hall in Slot:${id} corresponds to an hall in Event:${event.id}")
-        }
-        val date = computeDate(event)
-
-        return Talk(
-            id = session.id,
-            name = session.title,
-            eventStart = start.atDate(date),
-            eventEnd = start.plus(duration).atDate(date),
-            eventType = session.theme,
-            format = session.format,
-            hall = halls.first().toHall(),
-            speakers = session.speakers.map { it.toSpeaker() },
-            videoUrl = null,
-            filesUrl = null,
-            slidesUrl = null,
-            description = session.description
-        )
-    }
-
-    private fun SlotDB.computeDate(event: EventDB): LocalDate =
-        requireNotNull(event.begin)
-        { "Beginning of event should have been set before exporting talks" }
-            .plus((day - 1).toLong(), ChronoUnit.DAYS)
-
 }
 
+fun SlotDB.toManualTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
+    val session = requireNotNull(manualSession)
+    { "Slot toManualTalk called on slot with a null manualSession : Slot:$id" }
+    val halls = availableHalls.filter { it in halls }
+
+    if (halls.isEmpty()) {
+        throw HallNotFoundException("No Hall in Slot:${id} corresponds to an hall in Event:${event.id}")
+    }
+    val date = computeDate(event)
+
+    return Talk(
+        id = session.id,
+        name = session.title,
+        eventStart = start.atDate(date),
+        eventEnd = start.plus(duration).atDate(date),
+        eventType = session.theme,
+        format = session.format,
+        hall = halls.first().toHall(),
+        speakers = session.speakers.map { it.toSpeaker() },
+        videoUrl = null,
+        filesUrl = null,
+        slidesUrl = null,
+        description = session.description
+    )
+}
+
+fun SlotDB.toImportTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
+    val session = requireNotNull(session)
+    { "Slot toTalk called on slot with a null session : Slot:$id" }
+    val halls = availableHalls.filter { it in halls }
+
+    if (halls.isEmpty()) {
+        throw HallNotFoundException("No Hall in Slot:${id} corresponds to an hall in Event:${event.id}")
+    }
+    val date = computeDate(event)
+
+    return Talk(
+        id = session.id,
+        name = session.title,
+        eventStart = start.atDate(date),
+        eventEnd = start.plus(duration).atDate(date),
+        eventType = session.theme,
+        format = session.format,
+        hall = halls.first().toHall(),
+        speakers = session.speakers.map { it.toSpeaker() },
+        videoUrl = null,
+        filesUrl = null,
+        slidesUrl = null,
+        description = session.description
+    )
+}
+
+fun SlotDB.computeDate(event: EventDB): LocalDate =
+    requireNotNull(event.begin)
+    { "Beginning of event should have been set before exporting talks" }
+        .plus((day - 1).toLong(), ChronoUnit.DAYS)
