@@ -19,4 +19,149 @@
 
         <addAutoIncrement tableName="hall" columnName="id" incrementBy="1"/>
     </changeSet>
+
+    <changeSet id="1" author="Claire">
+        <createTable tableName="slot">
+            <column name="id" type="uuid"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="event_id" type="number"><constraints nullable="false" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_SLOT_EVENT"/></column>
+            <column name="hall_id" type="number"><constraints nullable="false" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_SLOT_HALL"/></column>
+            <column name="session_id" type="number"><constraints referencedTableName="session" referencedColumnNames="id" foreignKeyName="FK_SLOT_SESSION"/></column>
+            <column name="day" type="integer"/>
+            <column name="start" type="time"/>
+            <column name="duration" type="interval"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="Claire">
+        <addColumn tableName="hall">
+            <column name="track_id" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="3" author="Claire">
+        <addColumn tableName="session">
+            <column name="barcode" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="4" author="Claire">
+        <modifyDataType tableName="session" columnName="barcode" newDataType="text"/>
+    </changeSet>
+
+    <changeSet id="5" author="Claire">
+        <addColumn tableName="slot">
+            <column name="barcode" type="text"><constraints nullable="true" /></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="6" author="Claire">
+        <addColumn tableName="slot">
+            <column name="span" type="number" defaultValue="1"><constraints nullable="false"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="7" author="Claire">
+        <addColumn tableName="available">
+            <column name="order" type="number"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="8" author="Claire">
+        <createTable tableName="held">
+            <column name="slot_id" type="uuid"><constraints nullable="false" primaryKey="true" referencedTableName="slot" referencedColumnNames="id" foreignKeyName="FK_HELD_SLOT"/></column>
+            <column name="hall_id" type="numeric"><constraints nullable="false" primaryKey="true" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_HELD_HALL"/></column>
+            <column name="event_id" type="numeric"><constraints nullable="false" primaryKey="true" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_HELD_EVENT"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="9" author="Claire">
+        <sql>
+            INSERT INTO held (slot_id, hall_id, event_id)
+            SELECT id, hall_id, event_id FROM slot
+        </sql>
+    </changeSet>
+
+    <changeSet id="10" author="Claire">
+        <dropColumn tableName="slot">
+            <column name="hall_id"/>
+            <column name="event_id"/>
+            <column name="span"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="11" author="Claire">
+        <addColumn tableName="slot">
+            <column name="manual_session_id" type="numeric" defaultOnNull="true"><constraints nullable="true" referencedTableName="manual_session" referencedColumnNames="id" foreignKeyName="FK_SLOT_MANUAL_SESSION"/></column>
+            <column name="title" type="text"><constraints nullable="true"/></column>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="12" author="Claire">
+        <preConditions>
+            <and>
+                <columnExists tableName="session" columnName="hall_id"/>
+                <columnExists tableName="session" columnName="end"/>
+                <columnExists tableName="session" columnName="beginning"/>
+            </and>
+        </preConditions>
+
+        <dropColumn tableName="session">
+            <column name="hall_id"/>
+            <column name="end"/>
+            <column name="beginning"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="13" author="Claire">
+        <preConditions onFail="CONTINUE">
+            <and>
+                <columnExists tableName="manual_session" columnName="hall_id"/>
+                <columnExists tableName="manual_session" columnName="end"/>
+                <columnExists tableName="manual_session" columnName="beginning"/>
+                <columnExists tableName="manual_session" columnName="speaker_type"/>
+                <columnExists tableName="manual_session" columnName="video_url"/>
+                <columnExists tableName="manual_session" columnName="imported_speaker_id"/>
+                <columnExists tableName="manual_session" columnName="manual_speaker_id"/>
+            </and>
+        </preConditions>
+
+        <dropColumn tableName="manual_session">
+            <column name="hall_id"/>
+            <column name="end"/>
+            <column name="beginning"/>
+            <column name="speaker_type"/>
+            <column name="video_url"/>
+            <column name="imported_speaker_id"/>
+            <column name="manual_speaker_id"/>
+        </dropColumn>
+    </changeSet>
+
+    <changeSet id="14" author="Claire">
+        <preConditions onFail="CONTINUE">
+            <not>
+                <or>
+                    <columnExists tableName="manual_session" columnName="title"/>
+                    <tableExists tableName="manual_presents"/>
+                </or>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="manual_session">
+            <column name="title" type="text"><constraints nullable="false"/></column>
+        </addColumn>
+
+        <createTable tableName="manual_presents">
+            <column name="session_id" type="numeric">
+                <constraints nullable="false" primaryKey="true" referencedTableName="manual_session" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_MANUAL_SESSION"/>
+            </column>
+            <column name="speaker_id" type="uuid">
+                <constraints nullable="true" primaryKey="true" referencedTableName="speaker" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_SPEAKER"/>
+            </column>
+            <column name="manual_speaker_id" type="uuid">
+                <constraints nullable="true" primaryKey="true" referencedTableName="manual_speaker" referencedColumnNames="id" foreignKeyName="FK_PRESENTS_MANUAL_SPEAKER"/>
+            </column>
+        </createTable>
+
+        <addAutoIncrement tableName="manual_session" columnName="id" incrementBy="1"/>
+    </changeSet>
 </databaseChangeLog>

@@ -1,0 +1,28 @@
+"Session Id","Title","Description","Owner","Owner Email","Speakers","Format","Thème","Niveau","Status","Date Submitted","Owner Notes","Speaker Ids"
+101,"PSQL, une technologie de dinosaures ? 👴🏻","PostgreSQL approche ses 30 ans de carrière, et reste un des systèmes de gestion de base de données les plus utilisés à ce jour
+
+À travers l'exemple de notre parc, découvrez pourquoi PSQL reste un système en accord avec notre temps et comment ses extensions permettent d'intégrer tous les types de données utilisés dans notre entreprise, allant de la localisation géographique des enclos aux codes génétiques de nos dinosaures.","John Hammond","john.hammond@jurassic-park.fr","John Hammond","Conférence (55 min)","Architecture","Introduction","Nominated",14 avr. 2024 05:32 PM,"Après un bref rappel de ce qu'est une base de données relationnelle, cette conférence abordera les spécificités de Postgres, puis une présentation de notre cas d'usage. Ce cas d'usage a aussi pour but de présenter des extensions peu utilisées mais qui peuvent convenir à beaucoup de projets modernes, comme la gestion de données de localisation géographiques, de données vectorielles & de fichiers de grandes tailles","dd41f4a0-d300-4692-977a-14de9aa5db72"
+203,"Le futur de l'IA","Conférence sur les futures formes de l'IA, et comment le monde en sera impacté","Emmett Brown","doc@back-to-the-future.net","Emmett Brown","Conférence (55 min)","IA","Introduction","Nominated",15 avr. 2024 08:12 AM,,"7b1cce9c-59e4-4d6e-9ee2-9e20f1224ce4"
+207,"Dévoilons les Secrets de GitHub Actions","Découvrez comment gérer les secrets dans GitHub Actions pour sécuriser les workflows CI/CD.
+
+Clark aborde la création et la gestion des secrets, tandis que Bruce traite des techniques avancées comme la rotation et le partage sécurisé.
+
+Ensemble, nous montrons comment garantir des workflows efficaces et sécurisés dans GitHub Actions.","Bruce Wayne","bruce.wayne@wayne-industries.com","Bruce Wayne, Clark Kent","Tool in action (25 min)","Sécurité","Introduction","Nominated",15 avr. 2024 08:48 AM,"**Résumé**
+
+*Dévoiler les Secrets de GitHub Actions : démonstration*
+
+Découvrez comment gérer les secrets dans GitHub Actions, essentiels pour automatiser les workflows tout en sécurisant des éléments comme des clés d'API, des tokens d'authentification, ...
+
+Clark Kent, journaliste au Daily Bugle présente les bases de la gestion des secrets :
+
+1. **Définition des Secrets :** Création et gestion des secrets dans les paramètres du dépôt.
+2. **Contrôle d'Accès :** Accès réservé aux workflows spécifiques.
+3. **Segmentation par Environnement :** Configuration des secrets pour différents environnements (développement, staging, production).
+
+Bruce Wayne, ex-PDG de Wayne Industries, aborde quant à lui des techniques plus avancées pour la protection de vos secrets :
+
+1. **Rotation des Secrets :** Mise à jour régulière et automatisée.
+2. **Audit et Surveillance :** Suivi de l'utilisation des secrets.
+3. **Partage de Secrets :** Pratiques sécurisées pour partager entre différents dépôts.
+
+Ensemble, nous fournissons un guide complet pour gérer les secrets dans GitHub Actions, en soulignant l'importance de la sécurité dans les pipelines CI/CD. À la fin de cette session, vous saurez comment utiliser GitHub Actions pour des workflows efficaces et sécurisés.","17ac8d41-3167-455a-ba14-de73b20a4334, f9840ccd-0c22-4c6d-a712-be2c81847222"

@@ -2,7 +2,6 @@ package org.breizhcamp.konter.domain.use_cases
 
 import mu.KotlinLogging
 import org.apache.commons.csv.CSVFormat
-import org.breizhcamp.konter.application.requests.EventCreationReq
 import org.breizhcamp.konter.domain.entities.Evaluation
 import org.breizhcamp.konter.domain.entities.Event
 import org.breizhcamp.konter.domain.entities.Session
@@ -31,18 +30,19 @@ class SessionImport (
     private val kalonPort: KalonPort,
 ) {
 
-    fun importCsv(year: Int, file: InputStream) {
-        if (!eventPort.existsByYear(year)) {
-            logger.info { "No Event with year=$year found, importing from Kalon" }
+    fun importCsv(eventId: Int, file: InputStream) {
+        if (!eventPort.existsById(eventId)) {
+            logger.info { "No Event with id=$eventId found, importing from Kalon" }
 
             eventPort.save(kalonPort.getEvents())
         }
-        if (!eventPort.existsByYear(year)) {
-            logger.info { "No Event with year=$year found, creating one" }
+        if (!eventPort.existsById(eventId)) {
+            logger.info { "No Event with id=$eventId found, exiting" }
 
-            eventPort.create(EventCreationReq(year))
+            file.close()
+            return
         }
-        val event: Event = eventPort.getByYear(year)
+        val event: Event = eventPort.getById(eventId)
 
         val sessions = CSVFormat.Builder.create().apply {
             setIgnoreSurroundingSpaces(true)
@@ -67,17 +67,15 @@ class SessionImport (
                         .withLocale(Locale.FRENCH)),
                 ownerNotes = it[11].trim(),
                 event = event,
-                hall = null,
-                beginning = null,
-                end = null,
                 videoURL = null,
                 rating = null,
+                slot = null,
             )
         }
 
         logger.info { "Saving [${sessions.size}] Sessions" }
 
-        sessions.forEach(sessionPort::save)
+        sessions.forEach(sessionPort::import)
     }
 
     fun importEvaluationCsv(file: InputStream) {

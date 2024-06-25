@@ -19,9 +19,7 @@ data class SessionDTO(
     val status: SessionStatusEnum,
     val submitted: LocalDateTime,
     val ownerNotes: String,
-    val hall: HallDTO?,
-    val beginning: LocalDateTime?,
-    val end: LocalDateTime?,
     val videoURL: String?,
     val rating: BigDecimal?,
+    val slot: SlotDTO?,
 )

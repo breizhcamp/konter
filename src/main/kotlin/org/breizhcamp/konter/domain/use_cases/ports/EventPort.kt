@@ -1,15 +1,14 @@
 package org.breizhcamp.konter.domain.use_cases.ports
 
-import org.breizhcamp.konter.application.requests.EventCreationReq
 import org.breizhcamp.konter.domain.entities.Event
+import org.breizhcamp.konter.domain.entities.Talk
 
 interface EventPort {
 
-    fun existsByYear(year: Int): Boolean
+    fun existsById(id: Int): Boolean
     fun getById(id: Int): Event
-    fun getByYear(year: Int): Event
     fun save(event: Event)
     fun save(events: List<Event>)
-    fun create(request: EventCreationReq): Int
+    fun exportTalks(id: Int): List<Talk>
 
 }

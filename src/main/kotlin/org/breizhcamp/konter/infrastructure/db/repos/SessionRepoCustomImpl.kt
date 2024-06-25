@@ -3,6 +3,7 @@ package org.breizhcamp.konter.infrastructure.db.repos
 import mu.KotlinLogging
 import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.infrastructure.db.model.QSessionDB
+import org.breizhcamp.konter.infrastructure.db.model.QSlotDB
 import org.breizhcamp.konter.infrastructure.db.model.QSpeakerDB
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
@@ -10,15 +11,18 @@ import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 private val logger = KotlinLogging.logger {  }
 
 class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), SessionRepoCustom {
-    override fun filter(year: Int, filter: SessionFilter): List<SessionDB> {
+    override fun filter(eventId: Int, filter: SessionFilter, sortByFormat: Boolean): List<SessionDB> {
         val session = QSessionDB.sessionDB
         val speaker = QSpeakerDB.speakerDB
+        val slot = QSlotDB.slotDB
         val query = from(session)
 
-        query.where(session.event.year.eq(year))
+        query.leftJoin(session.slot, slot)
+
+        query.where(session.event.id.eq(eventId))
 
         filter.id?.let {
-            query.where(session.id.eq(it))
+            query.where(session.id.eq(it).or(session.barcode.eq(it.toString())))
             val bypassedFilterValue = query.fetch()
             if (bypassedFilterValue.size == 1) {
                 logger.info { "Session found with id, bypassing the rest of the filter" }
@@ -69,6 +73,10 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
             } else {
                 query.where(session.rating.isNull)
             }
+        }
+
+        if (sortByFormat) {
+            query.orderBy(session.format.asc())
         }
 
         query.orderBy(session.rating.desc().nullsLast())
