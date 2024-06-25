@@ -44,9 +44,9 @@ data class SlotDB(
     override fun hashCode(): Int {
         var hash = 0
 
-        for (item in this.javaClass.fields.filter {
-            it.name != SlotDB::session::name.toString() &&
-                    it.name != SlotDB::manualSession::name.toString()
+        for (item in this.javaClass.declaredFields.filter {
+            it.name != SlotDB::session.name &&
+                    it.name != SlotDB::manualSession.name
         }) {
             hash += item.hashCode()
             hash *= 32
