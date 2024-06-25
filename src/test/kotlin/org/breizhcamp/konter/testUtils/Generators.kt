@@ -220,12 +220,28 @@ class SlotGen: Generator<Slot> {
     )
 }
 
-class SlotDBGen: Generator<SlotDB> {
+class ImportSlotDBGen: Generator<SlotDB> {
     override fun generateOne(): SlotDB = SlotDB(
         id = UUID.randomUUID(),
         day = Random.nextInt(0, 5),
         session = SessionDBGen().generateOne(),
         manualSession = null,
+        event = EventDBGen().generateOne(),
+        halls = HallDBGen().generateList().toSet(),
+        start = generateRandomLocalDateTime().toLocalTime(),
+        duration = Duration.ofMinutes(Random.nextLong(15, 120)),
+        barcode = generateRandomHexString(),
+        title = generateRandomHexString(),
+        assignable = Random.nextBoolean()
+    )
+}
+
+class ManualSlotDBGen: Generator<SlotDB> {
+    override fun generateOne(): SlotDB = SlotDB(
+        id = UUID.randomUUID(),
+        day = Random.nextInt(0, 5),
+        session = null,
+        manualSession = ManualSessionDBGen().generateOne(),
         event = EventDBGen().generateOne(),
         halls = HallDBGen().generateList().toSet(),
         start = generateRandomLocalDateTime().toLocalTime(),
@@ -256,4 +272,25 @@ class TalkGen: Generator<Talk> {
             description = generateRandomHexString()
         )
     }
+}
+
+class SessionFilterGen: Generator<SessionFilter> {
+    override fun generateOne(): SessionFilter {
+        val format = SessionFormatEnum.entries.random()
+        val theme = SessionThemeEnum.entries.random()
+        val niveau = SessionNiveauEnum.entries.random()
+        val status = SessionStatusEnum.entries.random()
+
+        return SessionFilter(
+            id = Random.nextInt().absoluteValue,
+            title = generateRandomHexString(),
+            speakerName = generateRandomHexString(),
+            format = format,
+            theme = theme,
+            niveau = niveau,
+            status = status,
+            rated = Random.nextBoolean()
+        )
+    }
+
 }

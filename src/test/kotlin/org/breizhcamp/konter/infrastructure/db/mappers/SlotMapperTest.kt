@@ -19,7 +19,7 @@ class SlotMapperTest {
     @ParameterizedTest
     @EnumSource(SlotContentCases::class)
     fun toSlot(case: SlotContentCases) {
-        var slotDB = SlotDBGen().generateOne()
+        var slotDB = ImportSlotDBGen().generateOne()
 
         slotDB = when(case) {
              SlotContentCases.SessionAndManualSession,
@@ -72,7 +72,7 @@ class SlotMapperTest {
     @ParameterizedTest
     @EnumSource(SlotContentCases::class)
     fun toLimitedSlot(case: SlotContentCases) {
-        var slotDB = SlotDBGen().generateOne()
+        var slotDB = ImportSlotDBGen().generateOne()
 
         slotDB = when(case) {
             SlotContentCases.SessionAndManualSession,

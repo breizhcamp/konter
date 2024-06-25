@@ -168,7 +168,7 @@ class SessionControllerTest {
 
         @Test
         fun `setSessionByBarcode should log, call slotSetSession with its inputs and return the result as a DTO`(output: CapturedOutput) {
-            val barcode = generateRandomHexString(2).substring(0..<13)
+            val barcode = generateRandomHexString(3).substring(0..<13)
             every { slotSetSession.setByBarcode(session.id, barcode) } returns session
 
             assertEquals(session.toDto(), sessionController.setSlot(session.id, barcode))

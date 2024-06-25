@@ -12,11 +12,8 @@ import org.breizhcamp.konter.infrastructure.db.model.HallDB
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
 import org.breizhcamp.konter.testUtils.HallDBGen
 import org.breizhcamp.konter.testUtils.generateRandomHexString
-import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
@@ -195,5 +192,25 @@ class HallAdapterTest {
         hallAdapter.delete(id)
 
         verify { hallRepo.deleteById(id) }
+    }
+
+    @Test
+    fun `get should throw if the hall was not found`() {
+        val id = Random.nextInt().absoluteValue
+        every { hallRepo.findById(id) } returns Optional.empty()
+
+        assertThrows<NoSuchElementException> { hallAdapter.get(id) }
+
+        verify { hallRepo.findById(id) }
+    }
+
+    @Test
+    fun `get should return the result as a Hall if it was found`() {
+        val hall = HallDBGen().generateOne()
+        every { hallRepo.findById(hall.id) } returns Optional.of(hall)
+
+        assertEquals(hall.toHall(), hallAdapter.get(hall.id))
+
+        verify { hallRepo.findById(hall.id) }
     }
 }

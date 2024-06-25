@@ -7,6 +7,7 @@ import io.mockk.every
 import io.mockk.just
 import io.mockk.verify
 import org.breizhcamp.konter.application.requests.SlotCreationReq
+import org.breizhcamp.konter.application.requests.SlotPatchReq
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
 import org.breizhcamp.konter.domain.entities.exceptions.TimeConflictException
 import org.breizhcamp.konter.infrastructure.db.mappers.toHall
@@ -16,7 +17,8 @@ import org.breizhcamp.konter.infrastructure.db.model.SlotDB
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
 import org.breizhcamp.konter.infrastructure.db.repos.SlotRepo
 import org.breizhcamp.konter.testUtils.HallDBGen
-import org.breizhcamp.konter.testUtils.SlotDBGen
+import org.breizhcamp.konter.testUtils.ImportSlotDBGen
+import org.breizhcamp.konter.testUtils.ManualSlotDBGen
 import org.breizhcamp.konter.testUtils.generateRandomHexString
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
@@ -81,7 +83,7 @@ class SlotAdapterTest {
             title = generateRandomHexString()
             assignable = Random.nextBoolean()
 
-            existingSlot = SlotDBGen().generateOne().copy(day = Random.nextInt(1, 10))
+            existingSlot = ImportSlotDBGen().generateOne().copy(day = Random.nextInt(1, 10))
             existingSlots = listOf(existingSlot)
         }
 
@@ -146,7 +148,7 @@ class SlotAdapterTest {
                 title = slotCreationReq.title,
                 assignable = slotCreationReq.assignable
             ) } just Runs
-            val returnedSlot = SlotDBGen()
+            val returnedSlot = ImportSlotDBGen()
                 .generateOne()
                 .copy(
                     day = slotCreationReq.day,
@@ -196,7 +198,7 @@ class SlotAdapterTest {
     fun `getById should call repo and return the result as a Slot if it exists, or throw an Exception otherwise`(
         exists: Boolean
     ) {
-        val slotDB = SlotDBGen().generateOne()
+        val slotDB = ImportSlotDBGen().generateOne()
         every { slotRepo.findById(slotDB.id) } returns
                 if (exists) Optional.of(slotDB)
                 else Optional.empty()
@@ -219,7 +221,7 @@ class SlotAdapterTest {
         every { hallRepo.getAllByAvailableEventId(eventId) } returns halls
 
         val result = slotAdapter.getProgram(eventId)
-        assertEquals(1, result.size)
+        assertEquals(2, result.size)
 
         val tracks = requireNotNull(result[result.keys.first()])
         { "Precedent assert should have assured that there is at one entry in the map" }
@@ -255,7 +257,7 @@ class SlotAdapterTest {
 
         @BeforeEach
         fun setUp() {
-            slot = SlotDBGen().generateOne()
+            slot = ImportSlotDBGen().generateOne()
             hallId = Random.nextInt().absoluteValue
             every { slotRepo.findById(slot.id) } returns Optional.of(slot)
         }
@@ -278,6 +280,19 @@ class SlotAdapterTest {
             slotAdapter.dissociateHall(slot.id, hallId)
 
             verify { slotRepo.dissociateFromHall(slot.id, hallId) }
+        }
+
+        @Test
+        fun `dissociateHall should delete the slot if the halls are empty after call`() {
+            every { slotRepo.dissociateFromHall(slot.id, hallId) } just Runs
+            val newSlot = slot.copy(halls = emptySet())
+            every { slotRepo.findById(slot.id) } returns Optional.of(newSlot)
+            every { slotRepo.deleteById(slot.id) } just Runs
+
+            slotAdapter.dissociateHall(slot.id, hallId)
+
+            verify { slotRepo.dissociateFromHall(slot.id, hallId) }
+            verify { slotRepo.deleteById(slot.id) }
         }
 
         @AfterEach
@@ -344,10 +359,11 @@ class SlotAdapterTest {
         val firstHall = hallGen.generateOne()
         val secondHall = hallGen.generateOne()
         val halls = listOf(firstHall, secondHall)
-        val slotGen = SlotDBGen()
+        val slotGen = ImportSlotDBGen()
         val plenumSlotStart = LocalTime.of(9, 30)
         val plenumSlotDuration = Duration.ofHours(1)
-        val plenumSlot = slotGen
+
+        val plenumSlot = ManualSlotDBGen()
             .generateOne()
             .copy(
                 halls = halls.toSet(),
@@ -379,14 +395,43 @@ class SlotAdapterTest {
                 start = plenumSlotStart + plenumSlotDuration + Duration.ofHours(1),
                 duration = Duration.ofHours(1)
             )
+        val followingDayPlenumSlot = ManualSlotDBGen()
+            .generateOne()
+            .copy(
+                day = day + 1,
+                halls = halls.toSet(),
+                start = plenumSlotStart,
+                duration = plenumSlotDuration
+            )
 
         val allSlots = listOf(
             plenumSlot,
             twoHourSlot,
             firstOneHourSlot,
-            secondOneHourSlot
+            secondOneHourSlot,
+            followingDayPlenumSlot
         )
 
         return Pair(allSlots, halls)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun update(nonNullTitle: Boolean) {
+        val oldSlot = ImportSlotDBGen().generateOne()
+        val newTitle = if (nonNullTitle) generateRandomHexString() else null
+        val assignable = Random.nextBoolean()
+
+        val req = SlotPatchReq(title = newTitle, assignable = assignable)
+        val newSlot = if (nonNullTitle) oldSlot.copy(title = newTitle, assignable = assignable)
+            else oldSlot.copy(assignable = assignable)
+
+        every { slotRepo.findById(oldSlot.id) } returns Optional.of(oldSlot)
+        every { slotRepo.save(newSlot) } returns newSlot
+
+        assertEquals(newSlot.toSlot(), slotAdapter.update(oldSlot.id, req))
+
+        verify { slotRepo.findById(oldSlot.id) }
+        verify { slotRepo.save(newSlot) }
     }
 }

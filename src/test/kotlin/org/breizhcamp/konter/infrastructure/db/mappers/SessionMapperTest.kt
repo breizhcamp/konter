@@ -17,7 +17,7 @@ class SessionMapperTest {
     ) {
         var sessionDB = SessionDBGen().generateOne()
         if (hasNotNullSlot) {
-            sessionDB = sessionDB.copy(slot = SlotDBGen().generateOne())
+            sessionDB = sessionDB.copy(slot = ImportSlotDBGen().generateOne())
         }
         val session = sessionDB.toSession()
 
@@ -52,7 +52,7 @@ class SessionMapperTest {
     ) {
         var sessionDB = SessionDBGen().generateOne()
         if (hasNotNullSlot) {
-            sessionDB = sessionDB.copy(slot = SlotDBGen().generateOne())
+            sessionDB = sessionDB.copy(slot = ImportSlotDBGen().generateOne())
         }
         val session = sessionDB.toLimitedSession()
 
