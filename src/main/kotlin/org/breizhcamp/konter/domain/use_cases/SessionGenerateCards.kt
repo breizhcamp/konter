@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils.substring
 import org.breizhcamp.konter.domain.entities.enums.SessionThemeEnum
 import org.breizhcamp.konter.domain.entities.enums.getLabel
 import org.breizhcamp.konter.domain.use_cases.ports.SessionPort
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import java.io.OutputStream
 import java.util.*
@@ -66,7 +67,7 @@ class SessionGenerateCards (
         val bgTracksColor: MutableMap<SessionThemeEnum, Color> = EnumMap(SessionThemeEnum::class.java)
 
         // Create a card for each session in the given event
-        val sessions = sessionPort.getAllByEventId(eventId, true)
+        val sessions = sessionPort.getAllByEventId(eventId, true, Pageable.ofSize(Int.MAX_VALUE)).content
 
         sessions.forEach {
 

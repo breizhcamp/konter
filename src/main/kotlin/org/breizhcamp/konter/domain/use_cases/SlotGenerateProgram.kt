@@ -140,7 +140,6 @@ class SlotGenerateProgram (
 
                                 val cellTitle = Paragraph().apply {
                                     setTextAlignment(TextAlignment.CENTER)
-                                    setMarginBottom(10f)
                                     add(formatTime(slot.start))
                                     add(" - ")
                                     add(formatTime(slot.start.plus(slot.duration)))
@@ -159,9 +158,10 @@ class SlotGenerateProgram (
                                             code = slot.barcode
                                         }
                                         add(
-                                            Image(cellBarcode.createFormXObject(pdfDoc)).setHorizontalAlignment(
-                                                HorizontalAlignment.CENTER
-                                            )
+                                            Image(cellBarcode.createFormXObject(pdfDoc)).apply {
+                                                setMarginTop(10f)
+                                                setHorizontalAlignment(HorizontalAlignment.CENTER)
+                                            }
                                         )
                                     }
                                 }

@@ -9,6 +9,8 @@ import org.breizhcamp.konter.infrastructure.db.mappers.toDB
 import org.breizhcamp.konter.infrastructure.db.mappers.toSession
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
 import org.breizhcamp.konter.infrastructure.db.repos.SessionRepo
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -16,6 +18,7 @@ import java.util.*
 class SessionAdapter (
     private val sessionRepo: SessionRepo
 ): SessionPort {
+
     override fun getById(id: Int): Session =
         sessionRepo.findById(id).get().toSession()
 
@@ -34,8 +37,13 @@ class SessionAdapter (
         sessionRepo.save(toSave)
     }
 
-    override fun getAllByEventId(eventId: Int, sortByFormat: Boolean): List<Session> =
-        sessionRepo.filter(eventId, SessionFilter.empty(), sortByFormat).map { it.toSession() }
+    override fun getAllByEventId(eventId: Int, sortByFormat: Boolean, page: Pageable): Page<Session> =
+        sessionRepo.filter(
+            eventId,
+            SessionFilter.empty(),
+            sortByFormat,
+            page
+        ).map { it.toSession() }
 
     @Transactional
     override fun saveEvaluation(evaluation: Evaluation) {
@@ -43,8 +51,8 @@ class SessionAdapter (
         sessionRepo.save(session.toDB())
     }
 
-    override fun filterByEventId(eventId: Int, filter: SessionFilter): List<Session> =
-        sessionRepo.filter(eventId, filter, false).map { it.toSession() }
+    override fun filterByEventId(eventId: Int, filter: SessionFilter, page: Pageable): Page<Session> =
+        sessionRepo.filter(eventId, filter, false, page).map { it.toSession() }
 
     @Transactional
     override fun addBarcode(id: Int, barcode: String) {
@@ -66,3 +74,4 @@ class SessionAdapter (
         return setSlotById(id, slotId)
     }
 }
+

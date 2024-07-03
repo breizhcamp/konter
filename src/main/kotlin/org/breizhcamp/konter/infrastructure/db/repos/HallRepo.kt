@@ -15,9 +15,11 @@ interface HallRepo: JpaRepository<HallDB, Int> {
     fun create(name: String): Int
 
     @Modifying
-    @Query("""
+    @Query(
+        """
         UPDATE HallDB hall SET hall.trackId = ?2 WHERE hall.id = ?1
-    """)
+    """
+    )
     fun addTrackIdToHall(id: Int, trackId: Int)
 
     @Query("""

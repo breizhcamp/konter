@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.math.BigDecimal
 import java.util.*
@@ -94,16 +96,19 @@ class SessionAdapterTest {
     }
 
     @Test
-    fun `getAllByEventId should call repo with its inputs and an empty filter, and return the result as a List of Session`() {
+    fun `getAllByEventId should call repo with its inputs and an empty filter, and return the result as a Page of Session`() {
         val eventId = Random.nextInt().absoluteValue
         val sortByFormat = Random.nextBoolean()
-        val result = SessionDBGen().generateList()
+        val pageNumber = Random.nextInt().absoluteValue
+        val pageable = Pageable.ofSize(10).withPage(pageNumber)
+        val sessionList = SessionDBGen().generateList()
+        val result = PageImpl(sessionList, pageable, sessionList.size.toLong())
 
-        every { sessionRepo.filter(eventId, SessionFilter.empty(), sortByFormat) } returns result
+        every { sessionRepo.filter(eventId, SessionFilter.empty(), sortByFormat, pageable) } returns result
 
-        assertEquals(result.map { it.toSession() }, sessionAdapter.getAllByEventId(eventId, sortByFormat))
+        assertEquals(result.map { it.toSession() }, sessionAdapter.getAllByEventId(eventId, sortByFormat, pageable))
 
-        verify { sessionRepo.filter(eventId, SessionFilter.empty(), sortByFormat) }
+        verify { sessionRepo.filter(eventId, SessionFilter.empty(), sortByFormat, pageable) }
     }
 
     @Test
@@ -123,16 +128,19 @@ class SessionAdapterTest {
     }
 
     @Test
-    fun `filterByEventId should call repo with its input and sortByFormat set to false, and return the result as a List of Session`() {
+    fun `filterByEventId should call repo with its input and sortByFormat set to false, and return the result as a Page of Session`() {
         val filter = SessionFilterGen().generateOne()
         val eventId = Random.nextInt().absoluteValue
-        val result = SessionDBGen().generateList()
+        val pageNumber = Random.nextInt().absoluteValue
+        val pageable = Pageable.ofSize(10).withPage(pageNumber)
+        val sessionList = SessionDBGen().generateList()
+        val result = PageImpl(sessionList, pageable, sessionList.size.toLong())
 
-        every { sessionRepo.filter(eventId, filter, false) } returns result
+        every { sessionRepo.filter(eventId, filter, false, pageable) } returns result
 
-        assertEquals(result.map { it.toSession() }, sessionAdapter.filterByEventId(eventId, filter))
+        assertEquals(result.map { it.toSession() }, sessionAdapter.filterByEventId(eventId, filter, pageable))
 
-        verify { sessionRepo.filter(eventId, filter, false) }
+        verify { sessionRepo.filter(eventId, filter, false, pageable) }
     }
 
     @Test
