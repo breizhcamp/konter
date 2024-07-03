@@ -9,7 +9,7 @@ data class KonterConfig(
 
 data class KalonConfig(
     val enabled: Boolean,
-    val url: String,
+    val url: String = "",
 
     val secured: Boolean,
     val apiKey: String?,

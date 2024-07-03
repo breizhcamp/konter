@@ -1,0 +1,10 @@
+"Session Id","Title","Description","Owner","Owner Email","Speakers","Format","Thème","Niveau","Evaluation"
+101,"PSQL, une technologie de dinosaures ? 👴🏻","PostgreSQL approche ses 30 ans de carrière, et reste un des systèmes de gestion de base de données les plus utilisés à ce jour
+
+À travers l'exemple de notre parc, découvrez pourquoi PSQL reste un système en accord avec notre temps et comment ses extensions permettent d'intégrer tous les types de données utilisés dans notre entreprise, allant de la localisation géographique des enclos aux codes génétiques de nos dinosaures.","John Hammond","john.hammond@jurassic-park.fr","John Hammond","Conférence (55 min)","Architecture","Introduction",3.9
+203,"Le futur de l'IA","Conférence sur les futures formes de l'IA, et comment le monde en sera impacté","Emmett Brown","doc@back-to-the-future.net","Emmett Brown","Conférence (55 min)","IA","Introduction",2.3
+207,"Dévoilons les Secrets de GitHub Actions","Découvrez comment gérer les secrets dans GitHub Actions pour sécuriser les workflows CI/CD.
+
+Clark aborde la création et la gestion des secrets, tandis que Bruce traite des techniques avancées comme la rotation et le partage sécurisé.
+
+Ensemble, nous montrons comment garantir des workflows efficaces et sécurisés dans GitHub Actions.","Bruce Wayne","bruce.wayne@wayne-industries.com","Bruce Wayne, Clark Kent","Tool in action (25 min)","Sécurité","Introduction",4.2

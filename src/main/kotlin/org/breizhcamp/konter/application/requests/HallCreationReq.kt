@@ -1,5 +1,6 @@
 package org.breizhcamp.konter.application.requests
 
 data class HallCreationReq(
-    val name: String
+    val name: String,
+    val trackId: Int?,
 )

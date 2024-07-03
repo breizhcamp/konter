@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                   https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+    <changeSet id="0" author="Claire">
+        <preConditions onFail="CONTINUE">
+            <not>
+                <columnExists tableName="event" columnName="event_begin"/>
+            </not>
+        </preConditions>
+
+        <addColumn tableName="event">
+            <column name="event_begin" type="date"/>
+            <column name="event_end" type="date"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="1" author="Claire">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists foreignKeyName="FK_HELD_HALL"/>
+        </preConditions>
+
+        <dropForeignKeyConstraint baseTableName="held" constraintName="FK_HELD_HALL"/>
+        <addForeignKeyConstraint baseTableName="held" baseColumnNames="hall_id" constraintName="FK_HELD_HALL" referencedTableName="hall" referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="2" author="Claire">
+        <preConditions onFail="MARK_RAN">
+            <foreignKeyConstraintExists foreignKeyName="FK_AVAILABLE_HALL"/>
+        </preConditions>
+
+        <dropForeignKeyConstraint baseTableName="available" constraintName="FK_AVAILABLE_HALL"/>
+        <addForeignKeyConstraint baseTableName="available" baseColumnNames="hall_id" constraintName="FK_AVAILABLE_HALL" referencedTableName="hall" referencedColumnNames="id" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="3" author="Claire">
+        <addNotNullConstraint tableName="available" columnName="order"/>
+    </changeSet>
+
+    <changeSet id="4" author="Claire">
+        <dropDefaultValue tableName="event" columnName="id"/>
+        <dropSequence sequenceName="event_id_seq"/>
+    </changeSet>
+
+    <changeSet id="5" author="Claire">
+        <addColumn tableName="slot">
+            <column name="assignable" type="boolean" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>

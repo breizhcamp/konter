@@ -9,6 +9,6 @@ import org.springframework.stereotype.Service
 class SessionList(
     private val sessionPort: SessionPort
 ) {
-    fun list(year: Int): List<Session> = sessionPort.getAllByEventYear(year)
-    fun filter(year: Int, filter: SessionFilter): List<Session> = sessionPort.filterByEventYear(year, filter)
+    fun list(eventId: Int): List<Session> = sessionPort.getAllByEventId(eventId, false)
+    fun filter(eventId: Int, filter: SessionFilter): List<Session> = sessionPort.filterByEventId(eventId, filter)
 }
