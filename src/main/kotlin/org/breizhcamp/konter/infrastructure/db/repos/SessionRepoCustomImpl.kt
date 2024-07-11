@@ -51,6 +51,8 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
                         .or(session.speakers.contains(speaker))
                 }
                 query.where(subContains)
+            } else {
+                return PageImpl(emptyList(), page, 0L)
             }
         }
 
