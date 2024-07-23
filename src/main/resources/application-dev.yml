@@ -5,6 +5,23 @@ spring:
     password: konter
   jpa:
     show-sql: false
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            authorization-grant-type: client_credentials
+            client-id: konter-api
+            # This client secret is used in dev mode only, it should match the one
+            # attributed to the client in your local Keycloak instance
+            client-secret: CqaFmt2TSwbxx0XAnuZEB5qFbfAnVfFT
+        provider:
+          keycloak:
+            token-uri: http://localhost:8080/realms/DevKeyCloak/protocol/openid-connect/token
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/DevKeyCloak
+
 server:
   port: 4008
 
@@ -12,4 +29,9 @@ konter:
   kalon:
     enabled: true
     url: http://localhost:4007
-    secured: false
+
+logging:
+  level:
+    org:
+      springframework:
+        security: debug

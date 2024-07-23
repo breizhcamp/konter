@@ -4,6 +4,8 @@ import mu.KotlinLogging
 import org.breizhcamp.konter.config.KonterConfig
 import org.breizhcamp.konter.domain.entities.Event
 import org.breizhcamp.konter.domain.use_cases.ports.KalonPort
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServletOAuth2AuthorizedClientExchangeFilterFunction
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.support.WebClientAdapter
@@ -13,7 +15,8 @@ private val logger = KotlinLogging.logger {  }
 
 @Component
 class KalonAdapter (
-    private val config: KonterConfig
+    private val config: KonterConfig,
+    private val authorizedClientManager: OAuth2AuthorizedClientManager
 ): KalonPort {
     private val kalonClient = createClient()
 
@@ -26,15 +29,26 @@ class KalonAdapter (
     }
 
     private fun createClient(): KalonClient {
-        var webClientBuilder = WebClient.builder().baseUrl(config.kalon.url)
 
-        if (config.kalon.secured) {
-            val apiKey = requireNotNull(config.kalon.apiKey) { "Config error, Kalon apiKey is missing" }
-            webClientBuilder = webClientBuilder.defaultHeader("Authorization", "Basic $apiKey")
-        }
+        val oauth = ServletOAuth2AuthorizedClientExchangeFilterFunction(
+            authorizedClientManager
+        )
 
-        val client = webClientBuilder.build()
-        val factory = HttpServiceProxyFactory.builder(WebClientAdapter.forClient(client)).build()
+        oauth.setDefaultClientRegistrationId("keycloak")
+
+        val client = WebClient
+            .builder()
+            .baseUrl(config.kalon.url)
+            .filter(oauth)
+            .build()
+
+        val factory = HttpServiceProxyFactory
+            .builder()
+            .exchangeAdapter(WebClientAdapter
+                .forClient(client)
+                .asReactorExchangeAdapter())
+            .build()
+
         return factory.createClient(KalonClient::class.java)
     }
 }

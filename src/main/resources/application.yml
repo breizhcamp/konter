@@ -1,6 +1,9 @@
 spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 logging:
   level:
