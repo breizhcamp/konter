@@ -32,8 +32,8 @@
         </preConditions>
 
         <addColumn tableName="session">
-            <column name="event_id" type="number"><constraints nullable="true" references="event(id)" foreignKeyName="fk_session_event"/></column>
-            <column name="hall_id" type="number"><constraints nullable="true" references="hall(id)" foreignKeyName="fk_session_hall"/></column>
+            <column name="event_id" type="integer"><constraints nullable="true" references="event(id)" foreignKeyName="fk_session_event"/></column>
+            <column name="hall_id" type="integer"><constraints nullable="true" references="hall(id)" foreignKeyName="fk_session_hall"/></column>
             <column name="beginning" type="timestamp"/>
             <column name="end" type="timestamp"/>
             <column name="video_url" type="text"/>
@@ -70,13 +70,13 @@
 
         <createTable tableName="manual_session">
             <column name="id" type="number"><constraints primaryKey="true" nullable="false"/></column>
-            <column name="event_id" type="number"><constraints references="event(id)" foreignKeyName="fk_manual_session_event"/></column>
+            <column name="event_id" type="integer"><constraints references="event(id)" foreignKeyName="fk_manual_session_event"/></column>
             <column name="beginning" type="timestamp"/>
             <column name="end" type="timestamp"/>
             <column name="speaker_type" type="number"/>
             <column name="imported_speaker_id" type="uuid"><constraints references="speaker(id)" foreignKeyName="fk_manual_session_speaker"/></column>
             <column name="manual_speaker_id" type="uuid"><constraints references="manual_speaker(id)" foreignKeyName="fk_manual_session_manual_speaker"/></column>
-            <column name="hall_id" type="number"><constraints references="hall(id)" foreignKeyName="fk_manual_session_hall"/></column>
+            <column name="hall_id" type="integer"><constraints references="hall(id)" foreignKeyName="fk_manual_session_hall"/></column>
             <column name="video_url" type="text"/>
         </createTable>
     </changeSet>
