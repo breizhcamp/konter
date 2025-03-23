@@ -13,8 +13,8 @@
         </preConditions>
 
         <createTable tableName="available">
-            <column name="event_id" type="number"><constraints primaryKey="true" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_EVENT" nullable="false"/></column>
-            <column name="hall_id" type="number"><constraints primaryKey="true" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_HALL" nullable="false"/></column>
+            <column name="event_id" type="integer"><constraints primaryKey="true" referencedTableName="event" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_EVENT" nullable="false"/></column>
+            <column name="hall_id" type="integer"><constraints primaryKey="true" referencedTableName="hall" referencedColumnNames="id" foreignKeyName="FK_AVAILABLE_HALL" nullable="false"/></column>
         </createTable>
 
         <addAutoIncrement tableName="hall" columnName="id" incrementBy="1"/>

@@ -1,0 +1,17 @@
+services:
+  konter:
+    build: .
+    image: breizhcamp/konter
+    container_name: konter
+    platform: linux/amd64
+    env_file: .env
+    environment:
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - 8090:8080
+    networks:
+      - konter
+networks:
+  konter:
+    name: konter
+    driver: bridge
