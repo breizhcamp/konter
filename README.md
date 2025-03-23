@@ -46,7 +46,8 @@ build               Building docker image
 lint                Lint the Dockerfile
 gitleaks            Detecting secrets like passwords, API keys, and tokens in files
 Options:
--p, --prod          Starting konter container
+-d, --dev           Starting konter container with a dev profil
+-p, --prod          Starting konter container with a prod profil
 -v, --verbose       Make the command more talkative
 -h, --help          Display help
 ```
@@ -65,21 +66,26 @@ Pour démarrer, stopper ou supprimer les containers, on utilisera les commandes 
 * ```./run.sh stop```
 * ```./run.sh down```
 
-L'option **-p** ou **--prod** permet également de démarrer le container kalon, dont l'image est construite à partir des
-sources en local.
+L'option **--dev** ou **--prod** permet également de démarrer le container konter, dont l'image est construite
+à partir des sources en local.
 
 Exemple :
 
 ```
-./run.sh start -p
+./run.sh start --dev
 Creating and starting Docker containers
 ...
 [+] Running 4/4
-✔ konter                     Built                                                                                                                                                                                                                      0.0s 
-✔ Network konter_default     Created                                                                                                                                                                                                                    0.0s 
-✔ Container konter-konter-1  Started                                                                                                                                                                                                                    0.1s 
-✔ Container konter-db        Started
+ ✔ konter               Built                                                                                                                                                                                                                            0.0s
+ ✔ Network konter       Created                                                                                                                                                                                                                          0.0s
+ ✔ Container konter     Started                                                                                                                                                                                                                          0.2s
+ ✔ Container konter-db  Starte
 ```
+
+Remarque :
+
+* Avec l'option **--dev**, il est nécessaire de démarrer les containers du projet **kalon** 
+* On pourra vérifier que le container avec bien démarré avec la commande ```docker logs konter```.
 
 ### Analyser la syntaxe du code
 

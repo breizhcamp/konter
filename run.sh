@@ -3,12 +3,13 @@
 # Global variables
 CURRENT_PATH="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 DC_FILE="$CURRENT_PATH/docker-compose.yml"
+DC_DEV_FILE="$CURRENT_PATH/docker-compose-dev.yml"
 DC_PROD_FILE="$CURRENT_PATH/docker-compose-prod.yml"
 IMAGE_NAME="breizhcamp/konter:latest"
 IMAGE_TRIVY="aquasec/trivy:0.18.3"
 
 ARGS=()
-HELP=0 VERBOSE=0 PROD=0
+HELP=0 VERBOSE=0 DEV=0 PROD=0
 START=0 STOP=0 DOWN=0 BUILD=0 LINT=0 GITLEAKS=0
 
 source "$CURRENT_PATH/libs/utils.sh"
@@ -25,7 +26,8 @@ $(colors 'G')build$(colors 'W')               Building docker image
 $(colors 'G')lint$(colors 'W')                Lint the Dockerfile
 $(colors 'G')gitleaks$(colors 'W')            Detecting secrets like passwords, API keys, and tokens in files
 $(colors 'Y')Options:$(colors 'N')
-$(colors 'G')-p, --prod$(colors 'W')          Starting konter container
+$(colors 'G')-d, --dev$(colors 'W')           Starting konter container with a dev profil
+$(colors 'G')-p, --prod$(colors 'W')          Starting konter container with a prod profil
 $(colors 'G')-v, --verbose$(colors 'W')       Make the command more talkative
 $(colors 'G')-h, --help$(colors 'W')          Display help
     "
@@ -40,6 +42,9 @@ function start() {
     fi
     info "Creating and starting Docker containers"
     local cmd="docker compose -f $DC_FILE up --build -d"
+    if [[ $DEV -gt 0 ]]; then
+        cmd="docker compose -f $DC_FILE -f $DC_DEV_FILE up --build -d"
+    fi
     if [[ $PROD -gt 0 ]]; then
         cmd="docker compose -f $DC_FILE -f $DC_PROD_FILE up --build -d"
     fi
@@ -50,7 +55,7 @@ function start() {
 
 function stop() {
     info "Stopping Docker containers"
-    local cmd="docker compose -f $DC_FILE -f $DC_PROD_FILE stop"
+    local cmd="docker compose -f $DC_FILE -f $DC_DEV_FILE -f $DC_PROD_FILE stop"
     debug "$cmd"
     ! $cmd && error "Containers cannot be stopped" && return 1
     return 0
@@ -58,7 +63,7 @@ function stop() {
 
 function down() {
     info "Remove Docker containers, networks and volumes"
-    local cmd="docker compose -f $DC_FILE -f $DC_PROD_FILE down --volumes"
+    local cmd="docker compose -f $DC_FILE -f $DC_DEV_FILE -f $DC_PROD_FILE down --volumes"
     debug "$cmd"
     ! $cmd && error "Containers cannot be removed" && return 1
     return 0
@@ -116,6 +121,7 @@ function check_opts() {
             build) BUILD=1 ; ARGS+=("$opt") ;;
             lint) LINT=1 ;;
             gitleaks) GITLEAKS=1 ;;
+            --dev|-d) DEV=1 ;;
             --prod|-p) PROD=1 ;;
             --verbose|-v) VERBOSE=1 ;;
             --help) HELP=1 ;;

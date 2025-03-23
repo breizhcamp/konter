@@ -7,11 +7,16 @@ services:
     env_file: .env
     environment:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_PROFILES_ACTIVE=dev-docker
     ports:
       - 8090:8080
     networks:
       - konter
+      - kalon
 networks:
   konter:
     name: konter
     driver: bridge
+  kalon:
+    name: kalon
+    external: true
