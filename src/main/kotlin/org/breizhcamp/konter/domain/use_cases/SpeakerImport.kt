@@ -26,7 +26,7 @@ class SpeakerImport (
                 email = it[3].trim(),
                 tagLine = it[4].trim(),
                 bio = it[5].trim(),
-                profilePicture = it[6].trim(),
+                profilePicture = it[7].trim(),
             )
         }
 

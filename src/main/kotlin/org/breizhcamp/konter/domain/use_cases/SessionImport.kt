@@ -48,7 +48,7 @@ class SessionImport (
             setIgnoreSurroundingSpaces(true)
             setIgnoreEmptyLines(true)
         }.build().parse(file.reader()).drop(1).map {
-            val speakers = it.get(12)
+            val speakers = it[13]
                 .split(", ")
                 .map { str -> UUID.fromString(str) }
                 .map { id -> speakerPort.get(id) }
@@ -58,14 +58,14 @@ class SessionImport (
                 description = it[2].trim(),
                 owner = speakerPort.getByNameAndEmail(it[3].trim(), it[4].trim()),
                 speakers = speakers,
-                format = SessionFormatEnum.getFromString(it[6].trim()),
+                format = SessionFormatEnum.getFromString(it[6].trim().split(", ").first()), // TODO handle multiple formats
                 theme = SessionThemeEnum.getFromString(it[7].trim()),
                 niveau = SessionNiveauEnum.getFromString(it[8].trim()),
-                status = SessionStatusEnum.getFromString(it[9].trim()),
-                submitted = LocalDateTime.parse(it[10].trim(),
+                status = SessionStatusEnum.getFromString(it[10].trim()),
+                submitted = LocalDateTime.parse(it[11].trim(),
                     DateTimeFormatter.ofPattern("d MMM yyyy hh:mm a")
                         .withLocale(Locale.FRENCH)),
-                ownerNotes = it[11].trim(),
+                ownerNotes = it[12].trim(),
                 event = event,
                 videoURL = null,
                 rating = null,
@@ -86,7 +86,7 @@ class SessionImport (
             val session = sessionPort.getById(parseInt(it[0]))
             Evaluation(
                 session = session,
-                rating = it[9].replace(",", ".").toBigDecimal()
+                rating = it[10].replace(",", ".").toBigDecimal()
             )
         }
 

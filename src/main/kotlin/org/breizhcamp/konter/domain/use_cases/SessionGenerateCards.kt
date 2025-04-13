@@ -61,6 +61,7 @@ class SessionGenerateCards (
         val table = Table(3).apply {
             width = UnitValue.createPercentValue(100f)
             setPadding(0f)
+            setFixedLayout()
         }
 
         // Map from a SessionTheme to a color
