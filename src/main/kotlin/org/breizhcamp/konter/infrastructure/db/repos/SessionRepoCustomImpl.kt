@@ -2,6 +2,7 @@ package org.breizhcamp.konter.infrastructure.db.repos
 
 import mu.KotlinLogging
 import org.breizhcamp.konter.domain.entities.SessionFilter
+import org.breizhcamp.konter.infrastructure.db.model.QEventDB
 import org.breizhcamp.konter.infrastructure.db.model.QSessionDB
 import org.breizhcamp.konter.infrastructure.db.model.QSlotDB
 import org.breizhcamp.konter.infrastructure.db.model.QSpeakerDB
@@ -20,7 +21,9 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
         val slot = QSlotDB.slotDB
         val query = from(session)
 
-        query.leftJoin(session.slot, slot)
+        query.leftJoin(session.owner, QSpeakerDB.speakerDB).fetchJoin()
+        query.leftJoin(session.event, QEventDB.eventDB).fetchJoin()
+        query.leftJoin(session.slot, slot).fetchJoin()
 
         query.where(session.event.id.eq(eventId))
 
