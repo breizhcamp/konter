@@ -4,6 +4,7 @@ import com.itextpdf.barcodes.BarcodeEAN
 import jakarta.transaction.Transactional
 import org.breizhcamp.konter.application.requests.SlotCreationReq
 import org.breizhcamp.konter.application.requests.SlotPatchReq
+import org.breizhcamp.konter.domain.entities.Assignation
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.entities.Slot
 import org.breizhcamp.konter.domain.entities.exceptions.HallNotFoundException
@@ -13,6 +14,7 @@ import org.breizhcamp.konter.infrastructure.db.mappers.*
 import org.breizhcamp.konter.infrastructure.db.model.HallDB
 import org.breizhcamp.konter.infrastructure.db.model.SlotDB
 import org.breizhcamp.konter.infrastructure.db.repos.HallRepo
+import org.breizhcamp.konter.infrastructure.db.repos.SessionRepo
 import org.breizhcamp.konter.infrastructure.db.repos.SlotRepo
 import org.springframework.stereotype.Component
 import java.time.LocalTime
@@ -22,6 +24,7 @@ import java.util.*
 class SlotAdapter (
     private val slotRepo: SlotRepo,
     private val hallRepo: HallRepo,
+    private val sessionRepo: SessionRepo,
 ): SlotPort {
 
     @Throws
@@ -185,6 +188,25 @@ class SlotAdapter (
         val slot = slotRepo.findById(id).get()
         if (slot.halls.isEmpty()) {
             slotRepo.deleteById(id)
+        }
+    }
+
+    @Transactional
+    override fun clearSchedule(eventId: Int) {
+        slotRepo.clearSchedule(eventId)
+    }
+
+    @Transactional
+    override fun importSchedule(eventId: Int, assignations: List<Assignation>) {
+        val halls = hallRepo.getAllByAvailableEventId(eventId).associate { it.name to it.id }
+        val slots = slotRepo.getAllByEventId(eventId)
+
+        assignations.forEach { a ->
+            slots
+                .find { a.day == it.day && a.start == it.start && it.halls.any { h -> h.id == halls[a.room] } }
+                ?.apply {
+                    session = sessionRepo.getReferenceById(a.sessionId)
+                }
         }
     }
 

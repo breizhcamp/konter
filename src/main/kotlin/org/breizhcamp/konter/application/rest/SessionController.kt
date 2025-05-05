@@ -63,6 +63,13 @@ class SessionController (
         sessionImport.importEvaluationCsv(file.inputStream)
     }
 
+    @PostMapping("/{eventId}/import/schedule")
+    fun importSchedule(@PathVariable eventId: Int, file: MultipartFile) {
+        logger.info { "Importing Schedule" }
+
+        sessionImport.importSchedule(file.inputStream, eventId)
+    }
+
     @GetMapping("/{eventId}/export")
     fun exportCards(@PathVariable eventId: Int, output: HttpServletResponse) {
         logger.info { "Generating Sessions cards for Event:$eventId" }

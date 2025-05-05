@@ -43,4 +43,14 @@ interface SlotRepo: JpaRepository<SlotDB, UUID> {
         DELETE FROM held WHERE slot_id = ?1 and hall_id = ?2
     """, nativeQuery = true)
     fun dissociateFromHall(slotId: UUID, hallId: Int)
+
+    @Modifying
+    @Query("""
+        UPDATE slot
+        SET session_id = NULL
+        FROM held
+        WHERE slot.id = held.slot_id
+          AND held.event_id = ?1
+    """, nativeQuery = true)
+    fun clearSchedule(eventId: Int)
 }
