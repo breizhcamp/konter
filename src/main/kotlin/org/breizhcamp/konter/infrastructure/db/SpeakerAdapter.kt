@@ -26,4 +26,7 @@ class SpeakerAdapter (
         speakerRepo.save(speaker.toDB())
     }
 
+    override fun listWithSessionAndSlot(): List<Speaker> =
+        speakerRepo.findAllWithSessionAndSlot().map { it.toSpeaker() }
+
 }

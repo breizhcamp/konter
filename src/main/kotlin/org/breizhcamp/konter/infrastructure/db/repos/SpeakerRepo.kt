@@ -16,4 +16,14 @@ interface SpeakerRepo: JpaRepository<SpeakerDB, UUID> {
     """)
     fun findByNameAndEmail(name: String, email: String): SpeakerDB
 
+    @Query("""
+        SELECT DISTINCT s 
+        FROM SlotDB slot
+        JOIN slot.session session
+        JOIN session.speakers s
+        WHERE slot.session IS NOT NULL
+        ORDER BY s.lastname, s.firstname
+    """)
+    fun findAllWithSessionAndSlot(): List<SpeakerDB>
+
 }
