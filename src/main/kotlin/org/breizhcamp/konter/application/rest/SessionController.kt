@@ -10,6 +10,8 @@ import org.breizhcamp.konter.domain.entities.ManualSession
 import org.breizhcamp.konter.domain.entities.Session
 import org.breizhcamp.konter.domain.entities.SessionFilter
 import org.breizhcamp.konter.domain.use_cases.*
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.*
@@ -29,18 +31,22 @@ class SessionController (
     private val manualSessionCRUD: ManualSessionCRUD
 ) {
 
-    @GetMapping("/{eventId}")
-    fun listSessions(@PathVariable eventId: Int): List<SessionDTO> {
-        logger.info { "Listing Sessions from Event:$eventId" }
+    @GetMapping("/{eventId}/{page}")
+    fun listSessions(@PathVariable eventId: Int, @PathVariable page: Int): Page<SessionDTO> {
+        logger.info { "Listing Sessions from Event:$eventId at page $page" }
 
-        return sessionList.list(eventId).map { it.toDto() }
+        return sessionList.list(eventId, Pageable.ofSize(10).withPage(page)).map { it.toDto() }
     }
 
-    @PostMapping("/{eventId}/filter")
-    fun filterSessions(@PathVariable eventId: Int, @RequestBody sessionFilter: SessionFilter): List<SessionDTO> {
-        logger.info { "Filtering Sessions from Event:$eventId" }
+    @PostMapping("/{eventId}/filter/{page}")
+    fun filterSessions(
+        @PathVariable eventId: Int,
+        @PathVariable page: Int,
+        @RequestBody sessionFilter: SessionFilter
+    ): Page<SessionDTO> {
+        logger.info { "Filtering Sessions from Event:$eventId at page $page" }
 
-        return sessionList.filter(eventId, sessionFilter).map { it.toDto() }
+        return sessionList.filter(eventId, sessionFilter, Pageable.ofSize(10).withPage(page)).map { it.toDto() }
     }
 
     @PostMapping("/{eventId}/import")
@@ -55,6 +61,13 @@ class SessionController (
         logger.info { "Importing Evaluations" }
 
         sessionImport.importEvaluationCsv(file.inputStream)
+    }
+
+    @PostMapping("/{eventId}/import/schedule")
+    fun importSchedule(@PathVariable eventId: Int, file: MultipartFile) {
+        logger.info { "Importing Schedule" }
+
+        sessionImport.importSchedule(file.inputStream, eventId)
     }
 
     @GetMapping("/{eventId}/export")

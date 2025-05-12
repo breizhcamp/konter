@@ -2,6 +2,7 @@ package org.breizhcamp.konter.domain.use_cases.ports
 
 import org.breizhcamp.konter.application.requests.SlotCreationReq
 import org.breizhcamp.konter.application.requests.SlotPatchReq
+import org.breizhcamp.konter.domain.entities.Assignation
 import org.breizhcamp.konter.domain.entities.Hall
 import org.breizhcamp.konter.domain.entities.Slot
 import java.util.*
@@ -18,4 +19,6 @@ interface SlotPort {
     fun associateHall(id: UUID, eventId: Int, hallId: Int): Slot
     fun dissociateHall(id: UUID, hallId: Int)
 
+    fun clearSchedule(eventId: Int)
+    fun importSchedule(eventId: Int, assignations: List<Assignation>)
 }

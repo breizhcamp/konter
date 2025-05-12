@@ -24,6 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.system.CapturedOutput
 import org.springframework.boot.test.system.OutputCaptureExtension
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.mock.web.MockHttpServletResponse
@@ -63,33 +66,38 @@ class SessionControllerTest {
     @Nested
     inner class ListTests {
         private var eventId: Int = 0
-        private lateinit var sessions: List<Session>
+        private var pageNumber: Int = 0
+        private lateinit var pageable: Pageable
+        private lateinit var sessions: Page<Session>
 
         @BeforeEach
         fun setUp() {
             eventId = Random.nextInt().absoluteValue
-            sessions = SessionGen().generateList()
+            pageNumber = Random.nextInt().absoluteValue
+            pageable = Pageable.ofSize(10).withPage(pageNumber)
+            val sessionList = SessionGen().generateList()
+            sessions = PageImpl(sessionList, pageable, sessionList.size.toLong())
         }
 
         @Test
-        fun `listSessions should log, call List with its input and return the result as a List of DTOs`(output: CapturedOutput) {
-            every { sessionList.list(eventId) } returns sessions
+        fun `listSessions should log, call List with its input and return the result as a Page of DTOs`(output: CapturedOutput) {
+            every { sessionList.list(eventId, pageable) } returns sessions
 
-            assertEquals(sessions.map(Session::toDto), sessionController.listSessions(eventId))
-            assert(output.contains("Listing Sessions from Event:$eventId"))
+            assertEquals(sessions.map(Session::toDto), sessionController.listSessions(eventId, pageNumber))
+            assert(output.contains("Listing Sessions from Event:$eventId at page $pageNumber"))
 
-            verify { sessionList.list(eventId) }
+            verify { sessionList.list(eventId, pageable) }
         }
 
         @Test
-        fun `filterSessions should log, call List with its inputs and return the result as a List of DTOs`(output: CapturedOutput) {
+        fun `filterSessions should log, call List with its inputs and return the result as a Page of DTOs`(output: CapturedOutput) {
             val filter = SessionFilter.empty()
-            every { sessionList.filter(eventId, filter) } returns sessions
+            every { sessionList.filter(eventId, filter, pageable) } returns sessions
 
-            assertEquals(sessions.map(Session::toDto), sessionController.filterSessions(eventId, filter))
-            assert(output.contains("Filtering Sessions from Event:$eventId"))
+            assertEquals(sessions.map(Session::toDto), sessionController.filterSessions(eventId, pageNumber, filter))
+            assert(output.contains("Filtering Sessions from Event:$eventId at page $pageNumber"))
 
-            verify { sessionList.filter(eventId, filter) }
+            verify { sessionList.filter(eventId, filter, pageable) }
         }
     }
 

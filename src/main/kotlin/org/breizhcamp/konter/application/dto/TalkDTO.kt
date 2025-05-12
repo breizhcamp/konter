@@ -21,5 +21,6 @@ data class TalkDTO(
     val videoUrl: String?,
     val filesUrl: String?,
     val slidesUrl: String?,
-    val description: String?
+    val description: String?,
+    val level: String? = null
 )

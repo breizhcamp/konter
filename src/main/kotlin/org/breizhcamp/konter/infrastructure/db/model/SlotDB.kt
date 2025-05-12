@@ -16,7 +16,7 @@ data class SlotDB(
     val day: Int,
     @OneToOne
     @JoinColumn(name = "session_id")
-    val session: SessionDB?,
+    var session: SessionDB?,
     @OneToOne
     @JoinColumn(name = "manual_session_id")
     val manualSession: ManualSessionDB?,

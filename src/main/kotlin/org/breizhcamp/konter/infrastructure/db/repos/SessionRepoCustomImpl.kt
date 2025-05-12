@@ -2,22 +2,28 @@ package org.breizhcamp.konter.infrastructure.db.repos
 
 import mu.KotlinLogging
 import org.breizhcamp.konter.domain.entities.SessionFilter
+import org.breizhcamp.konter.infrastructure.db.model.QEventDB
 import org.breizhcamp.konter.infrastructure.db.model.QSessionDB
 import org.breizhcamp.konter.infrastructure.db.model.QSlotDB
 import org.breizhcamp.konter.infrastructure.db.model.QSpeakerDB
 import org.breizhcamp.konter.infrastructure.db.model.SessionDB
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport
 
 private val logger = KotlinLogging.logger {  }
 
 class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), SessionRepoCustom {
-    override fun filter(eventId: Int, filter: SessionFilter, sortByFormat: Boolean): List<SessionDB> {
+    override fun filter(eventId: Int, filter: SessionFilter, sortByFormat: Boolean, page: Pageable): Page<SessionDB> {
         val session = QSessionDB.sessionDB
         val speaker = QSpeakerDB.speakerDB
         val slot = QSlotDB.slotDB
         val query = from(session)
 
-        query.leftJoin(session.slot, slot)
+        query.leftJoin(session.owner, QSpeakerDB.speakerDB).fetchJoin()
+        query.leftJoin(session.event, QEventDB.eventDB).fetchJoin()
+        query.leftJoin(session.slot, slot).fetchJoin()
 
         query.where(session.event.id.eq(eventId))
 
@@ -26,7 +32,7 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
             val bypassedFilterValue = query.fetch()
             if (bypassedFilterValue.size == 1) {
                 logger.info { "Session found with id, bypassing the rest of the filter" }
-                return bypassedFilterValue
+                return PageImpl(bypassedFilterValue)
             }
         }
 
@@ -48,6 +54,8 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
                         .or(session.speakers.contains(speaker))
                 }
                 query.where(subContains)
+            } else {
+                return PageImpl(emptyList(), page, 0L)
             }
         }
 
@@ -80,7 +88,15 @@ class SessionRepoCustomImpl: QuerydslRepositorySupport(SessionDB::class.java), S
         }
 
         query.orderBy(session.rating.desc().nullsLast())
+        // When sorted by rating only, two sessions with the
+        // same rating can get swapped between pages.
+        // We fix it by also ordering by id
+        query.orderBy(session.id.desc())
 
-        return query.fetch()
+        query.offset(page.offset)
+        query.limit(page.pageSize.toLong())
+
+        val result = query.fetchResults()
+        return PageImpl(result.results, page, result.total)
     }
 }
