@@ -83,7 +83,8 @@ fun SlotDB.toManualTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
         videoUrl = null,
         filesUrl = null,
         slidesUrl = null,
-        description = session.description
+        description = session.description,
+        level = null,
     )
 }
 
@@ -109,7 +110,8 @@ fun SlotDB.toImportTalk(event: EventDB, availableHalls: List<HallDB>): Talk {
         videoUrl = null,
         filesUrl = null,
         slidesUrl = null,
-        description = session.description
+        description = session.description,
+        level = session.niveau.label
     )
 }
 

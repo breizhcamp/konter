@@ -1,9 +1,9 @@
 package org.breizhcamp.konter.domain.entities.enums
 
-enum class SessionNiveauEnum(val sessionizeNiveau: Regex) {
-    INTRO(Regex("Introduction")),
-    STANDARD(Regex("Standard")),
-    ADVANCED(Regex("Avanc."));
+enum class SessionNiveauEnum(val sessionizeNiveau: Regex, val label: String) {
+    INTRO(Regex("Introduction"), "Introduction"),
+    STANDARD(Regex("Standard"), "Standard"),
+    ADVANCED(Regex("Avanc."), "Avancé"),;
 
     companion object {
         fun getFromString(string: String) =

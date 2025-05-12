@@ -176,6 +176,7 @@ fun Talk.toDto(): TalkDTO {
         videoUrl = videoUrl,
         filesUrl = filesUrl,
         slidesUrl = slidesUrl,
-        description = description
+        description = description,
+        level = level,
     )
 }
